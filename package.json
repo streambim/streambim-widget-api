@@ -1,0 +1,33 @@
+{
+  "name": "streambim-widget-api",
+  "version": "0.0.8",
+  "description": "A JavaScript library for interacting with StreamBIM from within an embedded widget.",
+  "main": "dist/streambim-widget-api.min.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "jshint **.js",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rendra-tech/streambim-widget-api.git"
+  },
+  "keywords": [
+    "StreamBIM",
+    "BIM",
+    "IFC",
+    "OpenBIM"
+  ],
+  "author": "Christoffer Henne",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rendra-tech/streambim-widget-api/issues"
+  },
+  "homepage": "https://github.com/rendra-tech/streambim-widget-api#readme",
+  "devDependencies": {
+    "jshint": "latest",
+    "penpal": "3.0.1",
+    "webpack": "^4.29.0",
+    "webpack-cli": "^3.2.1"
+  }
+}

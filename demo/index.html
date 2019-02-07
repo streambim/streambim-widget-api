@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+  <head>
+   <title>StreamBIM widget demo</title>
+   <style>
+    body {
+      color: white; 
+      padding: 8px;
+    }
+    td {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px;
+    }
+    input, textarea, #screenshotImg {
+      margin-bottom: 8px;
+      width: calc(100% - 8px);
+    }
+    textarea {
+      height: 60px;
+    }
+    #events {
+      height: 200px; 
+      overflow: scroll;
+      padding: 12px;
+      margin-bottom: 12px;
+      li {
+        padding: 8px;
+      }
+    }
+   </style>
+ </head>
+ <body>
+    <h1>StreamBIM widget demo</h1>
+    <div id="events"></div>
+    <div id="connecting">
+      Waiting for connection...
+    </div>
+    <div id="buttons" style="display:none;">
+      <table>
+        <tr><td>
+          <button id="getCameraState">Get camera state</button>
+          <button id="setLastCameraState">Set last saved camera state</button>
+          <button id="setLastCameraPosition">Set last saved camera position</button>
+        </td></tr>
+        <tr><td>
+          <input id="guidInput" placeholder="GUID - click on object or move into space"></input>
+          <button id="getSpace">Get space</button>
+          <button id="gotoObject">Go to object</button>
+          <button id="highlightObject">Highlight object</button>
+          <button id="deHighlightObject">De-highlight object</button>
+          <button id="hideObject">Hide object</button>
+          <button id="showObject">Show object</button>
+        </td></tr>
+        <tr><td>
+          <button id="deHighlightAllObjects">De-highlight all objects</button>
+          <button id="showAllObjects">Show all objects</button>
+        </td></tr>
+        <tr><td>
+          <textarea id="stateInput" placeholder="JSON state"></textarea>
+          <button id="getViewportState">Get viewport state</button>
+          <button id="setViewportState">Set viewport state</button>
+        </td></tr>
+        <tr><td>
+          <img id="screenshotImg" placeholder="Screenshot">
+          <button id="takeScreenshot">Take 3D screenshot</button>
+        </td></tr>
+      </table>
+    </div>
+    <script src="../dist/streambim-widget-api.min.js"></script>
+    <script>
+      var logEvent = function(text) {
+        var element = document.createElement('li');
+        element.textContent = text;
+        eventsContainer = document.getElementById('events');
+        eventsContainer.appendChild(element);
+        eventsContainer.scrollTop = eventsContainer.scrollHeight;
+      };
+
+
+      StreamBIM.connect({
+        pickedObject: function (result) {
+          logEvent('Clicked at ' + result.guid);
+          document.getElementById('guidInput').value = result.guid;
+        },
+        spacesChanged: function (guids) {
+          if (guids.length) {
+            logEvent('Entered space ' + guids[0]);
+          } else {
+            logEvent('Left building');
+          }
+        }
+      }).then( function () {
+        document.getElementById('connecting').style = 'display:none';
+        document.getElementById('buttons').style = '';
+        logEvent('Widget ready');
+      });
+
+
+      var getCameraStateClicked = function () {
+        StreamBIM.getCameraState().then( (result) => {
+          logEvent('Got camera state: ' + result.position[0]);
+          window.lastCameraState = result;
+        });
+      }
+
+      var setLastCameraStateClicked = function () {
+        StreamBIM.setCameraState(window.lastCameraState).then( (result) => {
+          logEvent('setCameraState: ' + result);
+        });
+      }
+
+      var setLastCameraPositionClicked = function () {
+        StreamBIM.setCameraPosition(window.lastCameraState.position).then( (result) => {
+          logEvent('setCameraPosition: ' + result);
+        });
+      }
+
+      var getSpaceClicked = function () {
+        StreamBIM.getSpaces().then( (result) => {
+          if (result.length > 1) {
+            logEvent('Got spaces: ' + result.join(', '));
+          } else if (result.length == 1) {
+            logEvent('Got space: ' + result[0]);
+          } else {
+            logEvent('No spaces at current location');
+          }
+          document.getElementById('guidInput').value = result[0] || '';
+        });
+      }
+
+      var gotoObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.gotoObject(guid).then( (result) => {
+          logEvent('gotoObject: ' + result);
+        }).catch( function(error) {
+          logEvent('gotoObject failed: ' + error);
+        });
+      }
+
+      var highlightObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.highlightObject(guid).then( (result) => {
+          logEvent('highlightObject: ' + result);
+        }).catch( function(error) {
+          logEvent('highlightObject failed: ' + error);
+        });
+      }
+
+      var deHighlightObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.deHighlightObject(guid).then( (result) => {
+          logEvent('deHighlightObject object: ' + result);
+        }).catch( function(error) {
+          logEvent('deHighlightObject object failed: ' + error);
+        });
+      }
+
+      var deHighlightAllObjectsClicked = function () {
+        StreamBIM.deHighlightAllObjects().then( (result) => {
+          logEvent('deHighlightAllObjects: ' + result);
+        }).catch( function(error) {
+          logEvent('deHighlightAllObjects failed: ' + error);
+        });
+      }
+
+      var hideObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.hideObject(guid).then( (result) => {
+          logEvent('hideObject: ' + result);
+        }).catch( function(error) {
+          logEvent('hideObject failed: ' + error);
+        });
+      }
+
+      var showObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.showObject(guid).then( (result) => {
+          logEvent('showObject: ' + result);
+        }).catch( function(error) {
+          logEvent('showObject failed: ' + error);
+        });
+      }
+
+      var showAllObjectsClicked = function () {
+        StreamBIM.showAllObjects().then( (result) => {
+          logEvent('showAllObjects: ' + result);
+        }).catch( function(error) {
+          logEvent('showAllObjects failed: ' + error);
+        });
+      }
+
+      var getViewportStateClicked = function () {
+        StreamBIM.getViewportState().then( (result) => {
+          var stringifiedState = JSON.stringify(result);
+          logEvent('Got viewport state: ' + stringifiedState);
+          document.getElementById('stateInput').value = stringifiedState;
+        }).catch( function(error) {
+          logEvent('getViewportState failed: ' + error);
+        });
+      }
+
+      var setViewportStateClicked = function () {
+        var state = JSON.parse(document.getElementById('stateInput').value);
+        StreamBIM.setViewportState(state).then( (result) => {
+          logEvent('setViewportState: ' + result);
+        }).catch( function(error) {
+          logEvent('setViewportState failed: ' + error);
+        });
+      }
+
+      var takeScreenshotClicked = function () {
+        StreamBIM.takeScreenshot().then( (result) => {
+          if (result) {
+            logEvent('Got screenshot');
+            document.getElementById('screenshotImg').src = result;
+          } else {
+            logEvent('Take screenshot returned nothing. 3D disabled?');
+          }
+        }).catch( function(error) {
+          logEvent('takeScreenshot failed: ' + error);
+        });
+      }
+
+      document.getElementById('getCameraState').addEventListener("click", getCameraStateClicked, false);
+      document.getElementById('setLastCameraPosition').addEventListener("click", setLastCameraPositionClicked, false);
+      document.getElementById('setLastCameraState').addEventListener("click", setLastCameraStateClicked, false);
+      document.getElementById('getSpace').addEventListener("click", getSpaceClicked, false);
+      document.getElementById('gotoObject').addEventListener("click", gotoObjectClicked, false);
+      document.getElementById('highlightObject').addEventListener("click", highlightObjectClicked, false);
+      document.getElementById('deHighlightObject').addEventListener("click", deHighlightObjectClicked, false);
+      document.getElementById('deHighlightAllObjects').addEventListener("click", deHighlightAllObjectsClicked, false);
+      document.getElementById('hideObject').addEventListener("click", hideObjectClicked, false);
+      document.getElementById('showObject').addEventListener("click", showObjectClicked, false);
+      document.getElementById('showAllObjects').addEventListener("click", showAllObjectsClicked, false);
+      document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
+      document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
+      document.getElementById('takeScreenshot').addEventListener("click", takeScreenshotClicked, false);
+    </script>
+  </body>
+</html>
