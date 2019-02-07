@@ -19,7 +19,7 @@ StreamBIM.connect().then(function() {
 
 ### CDN
 
-We don't currently have a CDN solution, but you can download, bundle and load the [minified script](dist/streambim-widget-api.min.js), in which case the
+We don't currently have a CDN solution, but you can download, bundle and load the [minified script](https://raw.githubusercontent.com/rendra-tech/streambim-widget-api/master/dist/streambim-widget-api.min.js), in which case the
 library will be available on `window.StreamBIM`
 ```html
 <script src="streambim-widget-api.min.js"></script>
@@ -102,7 +102,7 @@ Returns a promise which is resolved with an object containing the entire viewpor
 
 ### `setViewportState(state)`
 Resets the viewport and applies the state, which should be on the same form as returned from `getViewportState()`: 
-```json
+```javascript
 {
   cameraState: {
     position: [x, y, z],
@@ -124,9 +124,7 @@ Please take a look at the [demo](/demo/index.html) widget for a complete impleme
 
 ## Dependencies
 
-The library is using the excellent Penpal library for secure communication with iframes via postMessage
-
-[Penpal](https://github.com/Aaronius/penpal)
+The library is using the excellent [Penpal](https://github.com/Aaronius/penpal) library for secure communication with iframes via postMessage
 
 ## License
 
