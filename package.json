@@ -1,6 +1,6 @@
 {
   "name": "streambim-widget-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A JavaScript library for interacting with StreamBIM from within an embedded widget.",
   "main": "dist/streambim-widget-api.min.js",
   "scripts": {
