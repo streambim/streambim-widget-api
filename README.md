@@ -68,7 +68,7 @@ Returns a promise which is resolved with an object containing the camera's posit
 
 ### `setCameraState(state)`
 Takes an object of the form 
-```json
+```javascript
 {
   position: [x, y, z],
   quaterion: [x, y, z, w]
