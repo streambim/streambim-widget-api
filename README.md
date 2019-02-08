@@ -82,6 +82,9 @@ Moves the camera to position (x, y, z) without modifying the camera's rotation.
 ### `getSpaces()`
 Returns a promise which is resolved with an array of GUIDs of the spaces the user's camera is currently inside. The spaces are sorted form the smallers to the largest.
 
+### `getObjectInfo(guid)`
+Returns a promise which is resolved with an object with various information about the object. 
+
 ### `gotoObject(guid)`
 It the GUID is for a space, the camera is moved to the center of the space. If the GUID is for an object, the camera is moved and rotated to look at the object. 
 
