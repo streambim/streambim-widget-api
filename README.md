@@ -64,14 +64,14 @@ This establishes the connection from the widget to StreamBIM. The function retur
 
 
 ### `getCameraState()`
-Returns a promise which is resolved with an object containing the camera's position and quaterion. 
+Returns a promise which is resolved with an object containing the camera's position and quaternion. 
 
 ### `setCameraState(state)`
 Takes an object of the form 
-```json
+```javascript
 {
   position: [x, y, z],
-  quaterion: [x, y, z, w]
+  quaternion: [x, y, z, w]
 }
 ```
 and applies it to the user's camera. 
@@ -106,7 +106,7 @@ Resets the viewport and applies the state, which should be on the same form as r
 {
   cameraState: {
     position: [x, y, z],
-    quaterion: [x, y, z, w]
+    quaternion: [x, y, z, w]
   },
   hiddenObjects: [guid],
   highlightedObjects: [guid],
