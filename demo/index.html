@@ -45,6 +45,7 @@
         <tr><td>
           <input id="guidInput" placeholder="GUID - click on object or move into space"></input>
           <button id="getSpace">Get space</button>
+          <button id="getObjectInfo">Get object info</button>
           <button id="gotoObject">Go to object</button>
           <button id="highlightObject">Highlight object</button>
           <button id="deHighlightObject">De-highlight object</button>
@@ -125,6 +126,15 @@
             logEvent('No spaces at current location');
           }
           document.getElementById('guidInput').value = result[0] || '';
+        });
+      }
+
+      var getObjectInfoClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.getObjectInfo(guid).then( (result) => {
+          logEvent('Got object info: ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logEvent('getObjectInfo failed: ' + error);
         });
       }
 
@@ -225,6 +235,7 @@
       document.getElementById('setLastCameraPosition').addEventListener("click", setLastCameraPositionClicked, false);
       document.getElementById('setLastCameraState').addEventListener("click", setLastCameraStateClicked, false);
       document.getElementById('getSpace').addEventListener("click", getSpaceClicked, false);
+      document.getElementById('getObjectInfo').addEventListener("click", getObjectInfoClicked, false);
       document.getElementById('gotoObject').addEventListener("click", gotoObjectClicked, false);
       document.getElementById('highlightObject').addEventListener("click", highlightObjectClicked, false);
       document.getElementById('deHighlightObject').addEventListener("click", deHighlightObjectClicked, false);
