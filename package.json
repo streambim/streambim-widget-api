@@ -1,6 +1,6 @@
 {
   "name": "streambim-widget-api",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A JavaScript library for interacting with StreamBIM from within an embedded widget.",
   "main": "dist/streambim-widget-api.min.js",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rendra-tech/streambim-widget-api.git"
+    "url": "git+https://github.com/streambim/streambim-widget-api.git"
   },
   "keywords": [
     "StreamBIM",
@@ -21,9 +21,9 @@
   "author": "Christoffer Henne",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rendra-tech/streambim-widget-api/issues"
+    "url": "https://github.com/streambim/streambim-widget-api/issues"
   },
-  "homepage": "https://github.com/rendra-tech/streambim-widget-api#readme",
+  "homepage": "https://github.com/streambim/streambim-widget-api#readme",
   "devDependencies": {
     "jshint": "latest",
     "penpal": "3.0.1",
