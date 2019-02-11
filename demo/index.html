@@ -77,6 +77,14 @@
         eventsContainer.scrollTop = eventsContainer.scrollHeight;
       };
 
+      var logError = function(name, error) {
+        var text = name + ' failed: ' + error.code;
+        if (error.detail) {
+          text = text + JSON.stringify(error.detail);
+        }
+        logEvent(text);
+      }
+
 
       StreamBIM.connect({
         pickedObject: function (result) {
@@ -94,6 +102,8 @@
         document.getElementById('connecting').style = 'display:none';
         document.getElementById('buttons').style = '';
         logEvent('Widget ready');
+      }).catch( function(error) {
+        logEvent('Connect failed: ' + JSON.stringify(error));
       });
 
 
@@ -101,18 +111,24 @@
         StreamBIM.getCameraState().then( (result) => {
           logEvent('Got camera state: ' + result.position[0]);
           window.lastCameraState = result;
+        }).catch( function(error) {
+          logError('getCameraState', error);
         });
       }
 
       var setLastCameraStateClicked = function () {
         StreamBIM.setCameraState(window.lastCameraState).then( (result) => {
           logEvent('setCameraState: ' + result);
+        }).catch( function(error) {
+          logError('setCameraState', error);
         });
       }
 
       var setLastCameraPositionClicked = function () {
         StreamBIM.setCameraPosition(window.lastCameraState.position).then( (result) => {
           logEvent('setCameraPosition: ' + result);
+        }).catch( function(error) {
+          logError('setCameraPosition', error);
         });
       }
 
@@ -126,6 +142,8 @@
             logEvent('No spaces at current location');
           }
           document.getElementById('guidInput').value = result[0] || '';
+        }).catch( function(error) {
+          logError('getSpaceClicked', error);
         });
       }
 
@@ -134,7 +152,7 @@
         StreamBIM.getObjectInfo(guid).then( (result) => {
           logEvent('Got object info: ' + JSON.stringify(result));
         }).catch( function(error) {
-          logEvent('getObjectInfo failed: ' + error);
+          logError('getObjectInfo', error);
         });
       }
 
@@ -152,7 +170,7 @@
         StreamBIM.highlightObject(guid).then( (result) => {
           logEvent('highlightObject: ' + result);
         }).catch( function(error) {
-          logEvent('highlightObject failed: ' + error);
+          logError('highlightObject', error);
         });
       }
 
@@ -161,7 +179,7 @@
         StreamBIM.deHighlightObject(guid).then( (result) => {
           logEvent('deHighlightObject object: ' + result);
         }).catch( function(error) {
-          logEvent('deHighlightObject object failed: ' + error);
+          logError('deHighlightObject', error);
         });
       }
 
@@ -169,7 +187,7 @@
         StreamBIM.deHighlightAllObjects().then( (result) => {
           logEvent('deHighlightAllObjects: ' + result);
         }).catch( function(error) {
-          logEvent('deHighlightAllObjects failed: ' + error);
+          logError('deHighlightAllObjects', error);
         });
       }
 
@@ -178,7 +196,7 @@
         StreamBIM.hideObject(guid).then( (result) => {
           logEvent('hideObject: ' + result);
         }).catch( function(error) {
-          logEvent('hideObject failed: ' + error);
+          logError('hideObject', error);
         });
       }
 
@@ -187,7 +205,7 @@
         StreamBIM.showObject(guid).then( (result) => {
           logEvent('showObject: ' + result);
         }).catch( function(error) {
-          logEvent('showObject failed: ' + error);
+          logError('showObject', error);
         });
       }
 
@@ -195,7 +213,7 @@
         StreamBIM.showAllObjects().then( (result) => {
           logEvent('showAllObjects: ' + result);
         }).catch( function(error) {
-          logEvent('showAllObjects failed: ' + error);
+          logError('showAllObjects', error);
         });
       }
 
@@ -205,7 +223,7 @@
           logEvent('Got viewport state: ' + stringifiedState);
           document.getElementById('stateInput').value = stringifiedState;
         }).catch( function(error) {
-          logEvent('getViewportState failed: ' + error);
+          logError('getViewportState', error);
         });
       }
 
@@ -214,20 +232,16 @@
         StreamBIM.setViewportState(state).then( (result) => {
           logEvent('setViewportState: ' + result);
         }).catch( function(error) {
-          logEvent('setViewportState failed: ' + error);
+          logError('setViewportState', error);
         });
       }
 
       var takeScreenshotClicked = function () {
         StreamBIM.takeScreenshot().then( (result) => {
-          if (result) {
-            logEvent('Got screenshot');
-            document.getElementById('screenshotImg').src = result;
-          } else {
-            logEvent('Take screenshot returned nothing. 3D disabled?');
-          }
+          logEvent('Got screenshot');
+          document.getElementById('screenshotImg').src = result;
         }).catch( function(error) {
-          logEvent('takeScreenshot failed: ' + error);
+          logError('takeScreenshot', error);
         });
       }
 
