@@ -19,7 +19,7 @@ StreamBIM.connect().then(function() {
 
 ### CDN
 
-We don't currently have a CDN solution, but you can download, bundle and load the [minified script](https://raw.githubusercontent.com/rendra-tech/streambim-widget-api/master/dist/streambim-widget-api.min.js), in which case the
+We don't currently have a CDN solution, but you can download, bundle and load the [minified script](https://raw.githubusercontent.com/streambim/streambim-widget-api/master/dist/streambim-widget-api.min.js), in which case the
 library will be available on `window.StreamBIM`
 ```html
 <script src="streambim-widget-api.min.js"></script>
@@ -63,6 +63,9 @@ This establishes the connection from the widget to StreamBIM. The function retur
 * `spacesChanged` (function, optional) Function to be called whenever the user enteres or leaves a space. The function has one argument which is an array of IFC space GUIDs, sorted from the smallest to the largest space. 
 
 
+### `getProjectId()`
+Returns a promise which is resolved with the project's ID.
+
 ### `getCameraState()`
 Returns a promise which is resolved with an object containing the camera's position and quaternion. 
 
@@ -85,8 +88,8 @@ Returns a promise which is resolved with an array of GUIDs of the spaces the use
 ### `getObjectInfo(guid)`
 Returns a promise which is resolved with an object with various information about the object. 
 
-### `gotoObject(guid)`
-It the GUID is for a space, the camera is moved to the center of the space. If the GUID is for an object, the camera is moved and rotated to look at the object. 
+### `gotoSpace(guid)`
+Move the camera to the center of the space.
 
 ### `highlightObject(guid)`
 
@@ -121,6 +124,9 @@ Resets the viewport and applies the state, which should be on the same form as r
 ### `takeScreenshot()`
 
 Returns a promise which is resolved with a dataUrl of the 3D screenshot.
+
+## Errors
+All API calls return promises which, if an error occurs, are rejected with an object which has a `code` and a `detail` field. Code is one of the following: `invalid`, `notFound`, `unknown`, `unauthorized` and `notAllowed`. Detail can contain anything and should only be used for debugging purposes. 
 
 ## Demo
 Please take a look at the [demo](/demo/index.html) widget for a complete implementation example.
