@@ -112,7 +112,7 @@
 
       var getProjectIdClicked = function () {
         StreamBIM.getProjectId().then( (result) => {
-          logEvent('Got project ID: ' + result;
+          logEvent('Got project ID: ' + result);
         }).catch( function(error) {
           logError('getProjectId', error);
         });
@@ -120,7 +120,7 @@
 
       var getCameraStateClicked = function () {
         StreamBIM.getCameraState().then( (result) => {
-          logEvent('Got camera state: ' + JSON.stringify(result);
+          logEvent('Got camera state: ' + JSON.stringify(result));
           window.lastCameraState = result;
         }).catch( function(error) {
           logError('getCameraState', error);
