@@ -5,7 +5,7 @@ import Penpal from 'penpal';
  *
  * A JavaScript library for interacting with 
  * StreamBIM from within an embedded widget
- * https://github.com/blabla
+ * https://github.com/streambim
  *
  * MIT License | (c) Rendra AS 2019
  */
