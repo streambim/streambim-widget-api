@@ -39,6 +39,7 @@
       <table>
         <tr><td>
           <button id="getProjectId">Get project ID</button>
+          <button id="getUserEmail">Get user email</button>
         </td></tr>
         <tr><td>
           <button id="getCameraState">Get camera state</button>
@@ -115,6 +116,14 @@
           logEvent('Got project ID: ' + result);
         }).catch( function(error) {
           logError('getProjectId', error);
+        });
+      }
+
+      var getUserEmailClicked = function () {
+        StreamBIM.getUserEmail().then( (result) => {
+          logEvent('Got user email: ' + result);
+        }).catch( function(error) {
+          logError('getUserEmail failed: ', error);
         });
       }
 
@@ -257,6 +266,7 @@
       }
 
       document.getElementById('getProjectId').addEventListener("click", getProjectIdClicked, false);
+      document.getElementById('getUserEmail').addEventListener("click", getUserEmailClicked, false);
       document.getElementById('getCameraState').addEventListener("click", getCameraStateClicked, false);
       document.getElementById('setLastCameraPosition').addEventListener("click", setLastCameraPositionClicked, false);
       document.getElementById('setLastCameraState').addEventListener("click", setLastCameraStateClicked, false);

@@ -66,6 +66,9 @@ This establishes the connection from the widget to StreamBIM. The function retur
 ### `getProjectId()`
 Returns a promise which is resolved with the project's ID.
 
+### `getUserEmail()`
+Returns a promise which is resolved with the authenticated user's email. 
+
 ### `getCameraState()`
 Returns a promise which is resolved with an object containing the camera's position and quaternion. 
 
