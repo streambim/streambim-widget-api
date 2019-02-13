@@ -58,7 +58,7 @@ This establishes the connection from the widget to StreamBIM. The function retur
 
 ##### Callbacks
 
-* `pickedObject` (function, optional) Function to be called whenever the user picks an object in StreamBIM. The function has one argument, which is an object containing the picked 3D coordinate and the GUID of the picked object.
+* `pickedObject` (function, optional) Function to be called whenever the user picks an object in StreamBIM. The function has one argument, which is an object containing `point` - the picked 3D coordinate and `guid` - the GUID of the picked object.
 
 * `spacesChanged` (function, optional) Function to be called whenever the user enteres or leaves a space. The function has one argument which is an array of IFC space GUIDs, sorted from the smallest to the largest space. 
 
