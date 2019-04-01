@@ -1,6 +1,16 @@
 # streambim-widget-api
 A JavaScript library for interacting with StreamBIM from within an embedded widget.
 
+## Integration
+
+StreamBIM widgets have to be whitelisted and then enabled per StreamBIM project. Please contact support@rendra.io if you want to set up a custom widget for one or more projects. 
+
+## Authentication
+
+If your widget requires authentication you have two options:
+1. Handle the authentication in the widget itself
+2. Use OpenID Connect and provide us with your identity server etc. StreamBIM will then open your login screen in a popup and persist the token per user across sessions.
+
 ## Installation
 
 ### Using npm
