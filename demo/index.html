@@ -23,9 +23,9 @@
       overflow: scroll;
       padding: 12px;
       margin-bottom: 12px;
-      li {
-        padding: 8px;
-      }
+    }
+    #events li {
+      padding: 8px;
     }
    </style>
  </head>
@@ -69,6 +69,14 @@
           <img id="screenshotImg" placeholder="Screenshot">
           <button id="takeScreenshot">Take 3D screenshot</button>
         </td></tr>
+        <tr><td>
+          <button id="showExpandBtn">Show expand button</button>
+          <button id="hideExpandBtn">Hide expand button</button>
+        </td></tr>
+        <tr><td>
+          <button id="expandBtn">Expand</button>
+          <button id="contractBtn">Contract</button>
+        </td></tr>
       </table>
     </div>
     <script src="../dist/streambim-widget-api.min.js"></script>
@@ -101,10 +109,19 @@
           } else {
             logEvent('Left building');
           }
-        }
+        },
+        didExpand: function () {
+          document.body.style.color = 'black';
+          logEvent('Did expand');
+        },
+        didContract: function () {
+          document.body.style = '';
+          logEvent('Did contract');
+        },
       }).then( function () {
         document.getElementById('connecting').style = 'display:none';
         document.getElementById('buttons').style = '';
+        StreamBIM.setShowExpandButton(true);
         logEvent('Widget ready');
       }).catch( function(error) {
         logEvent('Connect failed: ' + JSON.stringify(error));
@@ -265,6 +282,38 @@
         });
       }
 
+      var showExpandBtnClicked = function () {
+        StreamBIM.setShowExpandButton(true).then( (result) => {
+          logEvent('Showing expand button');
+        }).catch( function(error) {
+          logError('setShowExpandButton', error);
+        });
+      }
+
+      var hideExpandBtnClicked = function () {
+        StreamBIM.setShowExpandButton(false).then( (result) => {
+          logEvent('Hiding expand button');
+        }).catch( function(error) {
+          logError('setShowExpandButton', error);
+        });
+      }
+
+      var expandClicked = function () {
+        StreamBIM.setExpanded(true).then( (result) => {
+          logEvent('Clicked expand');
+        }).catch( function(error) {
+          logError('setExpanded', error);
+        });
+      }
+
+      var contractClicked = function () {
+        StreamBIM.setExpanded(false).then( (result) => {
+          logEvent('Clicked contract');
+        }).catch( function(error) {
+          logError('setExpanded', error);
+        });
+      }
+
       document.getElementById('getProjectId').addEventListener("click", getProjectIdClicked, false);
       document.getElementById('getUserEmail').addEventListener("click", getUserEmailClicked, false);
       document.getElementById('getCameraState').addEventListener("click", getCameraStateClicked, false);
@@ -282,6 +331,10 @@
       document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
       document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
       document.getElementById('takeScreenshot').addEventListener("click", takeScreenshotClicked, false);
+      document.getElementById('showExpandBtn').addEventListener("click", showExpandBtnClicked, false);
+      document.getElementById('hideExpandBtn').addEventListener("click", hideExpandBtnClicked, false);
+      document.getElementById('expandBtn').addEventListener("click", expandClicked, false);
+      document.getElementById('contractBtn').addEventListener("click", contractClicked, false);
     </script>
   </body>
 </html>

@@ -72,6 +72,10 @@ This establishes the connection from the widget to StreamBIM. The function retur
 
 * `spacesChanged` (function, optional) Function to be called whenever the user enteres or leaves a space. The function has one argument which is an array of IFC space GUIDs, sorted from the smallest to the largest space. 
 
+* `didExpand` (function, optional) Function to be called whenever the widget is expanded into fullscreen mode, either using the widget API or by the user clicking the expand/contract button in the panel header. 
+
+* `didContract` (function, optional) Function to be called whenever the widget is contracted into side panel mode, either using the widget API or by the user clicking the expand/contract button in the panel header. 
+
 
 ### `getProjectId()`
 Returns a promise which is resolved with the project's ID.
@@ -137,6 +141,14 @@ Resets the viewport and applies the state, which should be on the same form as r
 ### `takeScreenshot()`
 
 Returns a promise which is resolved with a dataUrl of the 3D screenshot.
+
+### `setShowExpandButton(bool)`
+
+Show or hide the expand/contract button in the widget panel's header.
+
+### `setExpanded(bool)`
+
+Set to TRUE to expand the widget into fullscreen mode or FALSE to contract the widget into side panel mode.
 
 ## Errors
 All API calls return promises which, if an error occurs, are rejected with an object which has a `code` and a `detail` field. Code is one of the following: `invalid`, `notFound`, `unknown`, `unauthorized` and `notAllowed`. Detail can contain anything and should only be used for debugging purposes. 
