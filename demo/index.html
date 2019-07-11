@@ -3,13 +3,19 @@
   <head>
    <title>StreamBIM widget demo</title>
    <style>
+    html, body {
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+    }
     body {
       color: white; 
-      padding: 8px;
+    }
+    td, h1 {
+      padding: 12px;
     }
     td {
       border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 12px;
     }
     input, textarea, #screenshotImg {
       margin-bottom: 8px;
@@ -17,6 +23,12 @@
     }
     textarea {
       height: 60px;
+    }
+    .content {
+      overflow: scroll!important; 
+      -webkit-overflow-scrolling: touch!important; 
+      width: 100%;
+      height: 100%;
     }
     #events {
       height: 200px; 
@@ -30,54 +42,56 @@
    </style>
  </head>
  <body>
-    <h1>StreamBIM widget demo</h1>
-    <div id="events"></div>
-    <div id="connecting">
-      Waiting for connection...
-    </div>
-    <div id="buttons" style="display:none;">
-      <table>
-        <tr><td>
-          <button id="getProjectId">Get project ID</button>
-          <button id="getUserEmail">Get user email</button>
-        </td></tr>
-        <tr><td>
-          <button id="getCameraState">Get camera state</button>
-          <button id="setLastCameraState">Set last saved camera state</button>
-          <button id="setLastCameraPosition">Set last saved camera position</button>
-        </td></tr>
-        <tr><td>
-          <input id="guidInput" placeholder="GUID - click on object or move into space"></input>
-          <button id="getSpace">Get space</button>
-          <button id="getObjectInfo">Get object info</button>
-          <button id="gotoSpace">Go to space</button>
-          <button id="highlightObject">Highlight object</button>
-          <button id="deHighlightObject">De-highlight object</button>
-          <button id="hideObject">Hide object</button>
-          <button id="showObject">Show object</button>
-        </td></tr>
-        <tr><td>
-          <button id="deHighlightAllObjects">De-highlight all objects</button>
-          <button id="showAllObjects">Show all objects</button>
-        </td></tr>
-        <tr><td>
-          <textarea id="stateInput" placeholder="JSON state"></textarea>
-          <button id="getViewportState">Get viewport state</button>
-          <button id="setViewportState">Set viewport state</button>
-        </td></tr>
-        <tr><td>
-          <img id="screenshotImg" placeholder="Screenshot">
-          <button id="takeScreenshot">Take 3D screenshot</button>
-        </td></tr>
-        <tr><td>
-          <button id="showExpandBtn">Show expand button</button>
-          <button id="hideExpandBtn">Hide expand button</button>
-        </td></tr>
-        <tr><td>
-          <button id="expandBtn">Expand</button>
-          <button id="contractBtn">Contract</button>
-        </td></tr>
-      </table>
+    <div class="content">
+      <h1>StreamBIM widget demo</h1>
+      <div id="events"></div>
+      <div id="connecting">
+        Waiting for connection...
+      </div>
+      <div id="buttons" style="display:none;">
+        <table>
+          <tr><td>
+            <button id="getProjectId">Get project ID</button>
+            <button id="getUserEmail">Get user email</button>
+          </td></tr>
+          <tr><td>
+            <button id="getCameraState">Get camera state</button>
+            <button id="setLastCameraState">Set last saved camera state</button>
+            <button id="setLastCameraPosition">Set last saved camera position</button>
+          </td></tr>
+          <tr><td>
+            <input id="guidInput" placeholder="GUID - click on object or move into space"></input>
+            <button id="getSpace">Get space</button>
+            <button id="getObjectInfo">Get object info</button>
+            <button id="gotoSpace">Go to space</button>
+            <button id="highlightObject">Highlight object</button>
+            <button id="deHighlightObject">De-highlight object</button>
+            <button id="hideObject">Hide object</button>
+            <button id="showObject">Show object</button>
+          </td></tr>
+          <tr><td>
+            <button id="deHighlightAllObjects">De-highlight all objects</button>
+            <button id="showAllObjects">Show all objects</button>
+          </td></tr>
+          <tr><td>
+            <textarea id="stateInput" placeholder="JSON state"></textarea>
+            <button id="getViewportState">Get viewport state</button>
+            <button id="setViewportState">Set viewport state</button>
+          </td></tr>
+          <tr><td>
+            <img id="screenshotImg" placeholder="Screenshot">
+            <button id="takeScreenshot">Take 3D screenshot</button>
+          </td></tr>
+          <tr><td>
+            <button id="showExpandBtn">Show expand button</button>
+            <button id="hideExpandBtn">Hide expand button</button>
+          </td></tr>
+          <tr><td>
+            <button id="expandBtn">Expand</button>
+            <button id="contractBtn">Contract</button>
+          </td></tr>
+        </table>
+      </div>
     </div>
     <script src="../dist/streambim-widget-api.min.js"></script>
     <script>
