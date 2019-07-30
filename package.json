@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/streambim/streambim-widget-api#readme",
   "devDependencies": {
-    "jshint": "latest",
+    "jshint": "^2.10.2",
     "penpal": "3.0.1",
     "webpack": "^4.29.0",
     "webpack-cli": "^3.2.1"
