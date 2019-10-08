@@ -118,6 +118,32 @@ Move the camera to the center of the space.
 
 ### `showObject(guid)`
 
+### `findObjects(query)`
+Returns a promise which is resolved with an an array of GUIDs for objects matching the query. 
+
+##### Query options
+
+* `filter.typeObjectGUID` Find objects by type object GUID
+* `filter.systemGUID` Find objects by system GUID
+* `page.limit` and `page.skip` for pagination
+
+```javascript
+{
+  filter: {
+    typeObjectGUID: "1a7mCik3D1IgMeWf2ZMmvT"
+  },
+  page: {
+    limit: 10,
+    skip: 0
+  }
+}
+```
+
+### `applyObjectSearch(filter)`
+Filter the 3D scene to show only objects matching the filter. See `findObjects(query)` for filter options.
+
+### `resetObjectSearch()`
+
 ### `showAllObjects()`
 
 ### `getViewportState()`
