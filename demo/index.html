@@ -76,13 +76,6 @@
             <button id="resetObjectSearchBtn">Reset object search</button>
           </td></tr>
           <tr><td>
-            <input id="typeObjectGUIDInput" placeholder="Type object GUID">
-            <input id="systemGUIDInput" placeholder="System GUID"> 
-            <input type="number" min="0" step="1" id="searchLimitInput" placeholder="Limit">
-            <input type="number" min="0" step="1" id="searchSkipInput" placeholder="Skip">
-            <button id="findObjectsBtn">Find objects</button>
-          </td></tr>
-          <tr><td>
             <button id="deHighlightAllObjects">De-highlight all objects</button>
             <button id="showAllObjects">Show all objects</button>
           </td></tr>
@@ -345,23 +338,6 @@
         });
       }
 
-      var findObjectsClicked = function () {
-        var query = {filter: {}, page: {}}
-        var typeObjectGUIDString = document.getElementById('typeObjectGUIDInput').value;
-        var systemGUIDString = document.getElementById('systemGUIDInput').value;
-        var limit = document.getElementById('searchLimitInput').value;
-        var skip = document.getElementById('searchSkipInput').value;
-        if (typeObjectGUIDString) query.filter.typeObjectGUID = typeObjectGUIDString;
-        if (systemGUIDString) query.filter.systemGUID = systemGUIDString
-        if (limit != "") query.page.limit = limit;
-        if (skip) query.page.skip = skip;
-        StreamBIM.findObjects(query).then( (result) => {
-          logEvent('Got object search result: \n   - ' + result.join('\n   - '));
-        }).catch( function(error) {
-          logError('findObjects', error);
-        });
-      }
-
       var findObjectsOfSameTypeClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
@@ -369,12 +345,9 @@
             var typeGuid = selectedObject.properties['Type Object Global Id']
             if (typeGuid) {
               var query = {
-                filter: {
-                  typeObjectGUID: typeGuid
-                },
-                page: {
-                  limit: 100
-                }
+                key: 'Type Object Global Id',
+                value: typeGuid,
+                limit: 100
               }
               StreamBIM.findObjects(query).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
@@ -382,13 +355,13 @@
                 logError('findObjects', error);
               });
             } else {
-              logError('Object has no type object',);
+              throw {code: 'Object has no type object'}
             }
           }).catch( function(error) {
-            logError('getObjectInfo', error);
+            logError('findObjectsOfSameTypeClicked', error);
           });
         } else {
-          logEvent('showObjectsOfSameType: GUID required');
+          logEvent('findObjectsOfSameTypeClicked: GUID required');
         }
       }
 
@@ -396,15 +369,12 @@
         var guid = document.getElementById('guidInput').value;
         if (guid) {
           StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
-            var systemGuid = selectedObject.properties['System Global Id']
-            if (systemGuid) {
+            var systemGuids = selectedObject.properties['System Global Id']
+            if (systemGuids && systemGuids.length) {
               var query = {
-                filter: {
-                  systemGUID: systemGuid
-                },
-                page: {
-                  limit: 100
-                }
+                key: 'System Global Id',
+                value: systemGuids[0],
+                limit: 100
               }
               StreamBIM.findObjects(query).then( (result) => {
                 logEvent('Objects in same system: \n   - ' + result.join('\n   - '));
@@ -412,13 +382,13 @@
                 logError('findObjects', error);
               });
             } else {
-              logError('Object is not part of any system',);
+              throw {code: 'Object is not part of any system'}
             }
           }).catch( function(error) {
-            logError('getObjectInfo', error);
+            logError('showObjectsInSameSystem', error);
           });
         } else {
-          logEvent('showObjectsInSameSystem: GUID required');
+          logEvent('showObjectsInSameSystem failed: GUID required');
         }
       }
 
@@ -428,19 +398,21 @@
           StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
             var typeGuid = selectedObject.properties['Type Object Global Id']
             if (typeGuid) {
-              var filter = {
-                typeObjectGUID: typeGuid
+              var query = {
+                key: 'Type Object Global Id',
+                value: typeGuid,
+                limit: 100
               }
-              StreamBIM.applyObjectSearch(filter).then( (result) => {
-                logEvent('Now showing objects of same type as ' + selectedObject.properties['Name']);
+              StreamBIM.applyObjectSearch(query).then( (result) => {
+                logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
-                logError('applyObjectSearch', error);
+                logError('findObjects', error);
               });
             } else {
-              logError('Object has no type object',);
+              throw {code: 'Object has no type object'}
             }
           }).catch( function(error) {
-            logError('getObjectInfo', error);
+            logError('showObjectsOfSameTypeClicked', error);
           });
         } else {
           logEvent('showObjectsOfSameType: GUID required');
@@ -451,24 +423,26 @@
         var guid = document.getElementById('guidInput').value;
         if (guid) {
           StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
-            var systemGuid = selectedObject.properties['System Global Id']
-            if (systemGuid) {
-              var filter = {
-                systemGUID: systemGuid
+            var systemGuids = selectedObject.properties['System Global Id']
+            if (systemGuids && systemGuids.length) {
+              var query = {
+                key: 'System Global Id',
+                value: systemGuids[0],
+                limit: 100
               }
-              StreamBIM.applyObjectSearch(filter).then( (result) => {
-                logEvent('Now showing objects in same system as ' + selectedObject.properties['Name']);
+              StreamBIM.applyObjectSearch(query).then( (result) => {
+                logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
-                logError('applyObjectSearch', error);
+                logError('findObjects', error);
               });
             } else {
-              logError('Object is not part of any system',);
+              throw {code: 'Object is not part of any system'}
             }
           }).catch( function(error) {
-            logError('getObjectInfo', error);
+            logError('showObjectsInSameSystemClicked', error);
           });
         } else {
-          logEvent('showObjectsInSameSystem: GUID required');
+          logEvent('showObjectsInSameSystemClicked: GUID required');
         }
       }
 
@@ -502,7 +476,6 @@
       document.getElementById('hideExpandBtn').addEventListener("click", hideExpandBtnClicked, false);
       document.getElementById('expandBtn').addEventListener("click", expandClicked, false);
       document.getElementById('contractBtn').addEventListener("click", contractClicked, false);
-      document.getElementById('findObjectsBtn').addEventListener("click", findObjectsClicked, false);
       document.getElementById('findObjectsOfSameTypeBtn').addEventListener("click", findObjectsOfSameTypeClicked, false);
       document.getElementById('findObjectsInSameSystemBtn').addEventListener("click", findObjectsInSameSystemClicked, false);
       document.getElementById('showObjectsOfSameTypeBtn').addEventListener("click", showObjectsOfSameTypeClicked, false);
