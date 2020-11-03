@@ -1,4 +1,4 @@
-import Penpal from 'penpal';
+import { connectToParent } from 'penpal';
 
 /*!
  * StreamBIM widget API
@@ -17,7 +17,7 @@ import Penpal from 'penpal';
 }(window, 'StreamBIM', function () {
     return {
       connect(methods = {}) {
-        this._connection = Penpal.connectToParent({
+        this._connection = connectToParent({
           methods: methods
         });
 
