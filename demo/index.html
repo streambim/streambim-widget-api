@@ -73,6 +73,7 @@
             <button id="findObjectsInSameSystemBtn">Find objects in same system</button>
             <button id="showObjectsOfSameTypeBtn">Show objects of same type</button>
             <button id="showObjectsInSameSystemBtn">Show objects in same system</button>
+            <button id="getObjectInfoForAllDoors">Get object info for all doors</button>
             <button id="resetObjectSearchBtn">Reset object search</button>
           </td></tr>
           <tr><td>
@@ -396,7 +397,7 @@
         var guid = document.getElementById('guidInput').value;
         if (guid) {
           StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
-            var typeGuid = selectedObject.properties['Type Object Global Id']
+            var typeGuid = selectedObject.properties['Type Object Global Id'].split('~').pop()
             if (typeGuid) {
               var query = {
                 key: 'Type Object Global Id',
@@ -446,6 +447,28 @@
         }
       }
 
+      var getObjectInfoForAllDoorsClicked = function () {
+        var query = {
+          filter: {
+            key: '@kind',
+            value: 'Door'
+          },
+          page: {
+            limit: 1000,
+            skip: 0
+          }, 
+          sort: {
+            field: 'Name',
+            descending: false
+          }
+        }
+        StreamBIM.getObjectInfoForSearch(query).then(function(result) {
+          logEvent('Info for all doors: \n   - ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('getObjectInfoForAllDoorsClicked', error);
+        });
+      }
+
 
       var resetObjectSearchClicked = function () {
         StreamBIM.resetObjectSearch().then( () => {
@@ -481,6 +504,7 @@
       document.getElementById('showObjectsOfSameTypeBtn').addEventListener("click", showObjectsOfSameTypeClicked, false);
       document.getElementById('showObjectsInSameSystemBtn').addEventListener("click", showObjectsInSameSystemClicked, false);
       document.getElementById('resetObjectSearchBtn').addEventListener("click", resetObjectSearchClicked, false);
+      document.getElementById('getObjectInfoForAllDoors').addEventListener("click", getObjectInfoForAllDoorsClicked, false);
     </script>
   </body>
 </html>

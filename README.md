@@ -123,21 +123,31 @@ Returns a promise which is resolved with an an array of GUIDs for objects matchi
 
 ##### Query options
 
-* `filter.typeObjectGUID` Find objects by type object GUID
-* `filter.systemGUID` Find objects by system GUID
+* `filter.key` The key for the property to search for
+* `filter.value` The value of the property to search for
 * `page.limit` and `page.skip` for pagination
+* `sort.field` and `sort.descending` for sorting (only applies to `getObjectInfoForSearch`)
 
 ```javascript
 {
   filter: {
-    typeObjectGUID: "1a7mCik3D1IgMeWf2ZMmvT"
+    key: "Type Object Global Id",
+    value: "1a7mCik3D1IgMeWf2ZMmvT"
   },
   page: {
     limit: 10,
     skip: 0
+  },
+  sort: {
+    field: 'ID',
+    descending: false
+
   }
 }
 ```
+
+### `getObjectInfoForSearch(query)`
+Filter the 3D scene to show only objects matching the filter. See `findObjects(query)` for filter options.
 
 ### `applyObjectSearch(filter)`
 Filter the 3D scene to show only objects matching the filter. See `findObjects(query)` for filter options.
