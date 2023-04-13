@@ -131,6 +131,9 @@
             logEvent('Left building');
           }
         },
+        cameraChanged: function (cameraState) {
+          logEvent('Camera changed: ' + JSON.stringify(cameraState));
+        },
         didExpand: function () {
           document.body.style.color = 'black';
           logEvent('Did expand');

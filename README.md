@@ -72,6 +72,8 @@ This establishes the connection from the widget to StreamBIM. The function retur
 
 * `spacesChanged` (function, optional) Function to be called whenever the user enteres or leaves a space. The function has one argument which is an array of IFC space GUIDs, sorted from the smallest to the largest space. 
 
+* `cameraChanged` (function, optional) Function to be called whenever the user moves or rotates the camera. The function has one argument which holds the camera position (vector) and orientation (quaternion). This complies to the IFC/BCF coordinate system where position (0,0,0) is the model origin and orientation (0,0,0,0) is north. 
+
 * `didExpand` (function, optional) Function to be called whenever the widget is expanded into fullscreen mode, either using the widget API or by the user clicking the expand/contract button in the panel header. 
 
 * `didContract` (function, optional) Function to be called whenever the widget is contracted into side panel mode, either using the widget API or by the user clicking the expand/contract button in the panel header. 
