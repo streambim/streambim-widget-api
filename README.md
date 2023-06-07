@@ -1,5 +1,5 @@
 # streambim-widget-api
-A JavaScript library for interacting with StreamBIM from within an embedded widget.
+A JavaScript library for interacting with StreamBIM from within an embedded widget, as well as for using StreamBIM in embedded mode.
 
 ## Integration
 
@@ -17,20 +17,52 @@ If your widget requires authentication you have two options:
 
 `npm install streambim-widget-api --save`
 
-And import the library into your code with something like:
+And import the library into your code. 
+
+To run a widget inside StreamBIM, call something like this from your widget:
 
 ```javascript
 import StreamBIM from 'streambim-widget-api';
 
-StreamBIM.connect().then(function() {
+const methods = {
+  pickedObject: function (result) {
+    console.log('Clicked at ' + result.guid);
+  }
+}
+
+StreamBIM.connect(methods).then(function() {
   console.log('Connected!');
 });
 ```
+
+To run StreamBIM in embedded mode, first create an iframe, open a StreamBIM project with embedded=true in the URL parameters, and then call the `connectToChild` method.
+
+```javascript
+import StreamBIM from 'streambim-widget-api';
+
+const iframe = document.getElementById('streambim_target');
+const projectId = PROJECT_ID;
+
+iframe.src = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+
+const methods = {
+  pickedObject: function (result) {
+    console.log('Clicked at ' + result.guid);
+  }
+}
+
+StreamBIM.connectToChild(iframe, methods).then(function() {
+  console.log('Connected!');
+});
+```
+
+For full list of supported methods, see Usage below.
 
 ### CDN
 
 We don't currently have a CDN solution, but you can download, bundle and load the [minified script](https://raw.githubusercontent.com/streambim/streambim-widget-api/master/dist/streambim-widget-api.min.js), in which case the
 library will be available on `window.StreamBIM`
+
 ```html
 <script src="streambim-widget-api.min.js"></script>
 <script>
@@ -42,7 +74,26 @@ library will be available on `window.StreamBIM`
 ## Usage
 
 ```javascript
+// From within a widget
+
 StreamBIM.connect({
+  pickedObject: function (result) {
+    console.log('Clicked at ' + result.guid);
+  },
+  spacesChanged: function (guids) {
+    console.log('Entered space: ' + guids[0]);
+  }
+}).then( function () {
+  console.log('Widget ready');
+
+  StreamBIM.getCameraState().then( (result) => {
+    console.log('Got camera state: ', result);
+  });
+});
+
+
+// From a parent running StreamBIM in embedded mode
+StreamBIM.connectToChild(iframe, {
   pickedObject: function (result) {
     console.log('Clicked at ' + result.guid);
   },
@@ -65,6 +116,10 @@ The API is promise based, which means all functions below return promises.
 ### `connect(callbacks)`
 
 This establishes the connection from the widget to StreamBIM. The function returns a promise which has to be fulfilled before any other API calls can be made. 
+
+### `connectToChild(iframe, callbacks)`
+
+This establishes the connection from the parent to StreamBIM in embedded mode. The function returns a promise which has to be fulfilled before any other API calls can be made. 
 
 ##### Callbacks
 
@@ -129,6 +184,7 @@ Returns a promise which is resolved with an an array of GUIDs for objects matchi
 * `filter.value` The value of the property to search for
 * `page.limit` and `page.skip` for pagination
 * `sort.field` and `sort.descending` for sorting (only applies to `getObjectInfoForSearch`)
+* `fieldUnion` used for getObjectInfoForSearch only. If true, it returns all properies for all objects. If false, it returns only basic properties. 
 
 ```javascript
 {
@@ -192,7 +248,7 @@ Set to TRUE to expand the widget into fullscreen mode or FALSE to contract the w
 All API calls return promises which, if an error occurs, are rejected with an object which has a `code` and a `detail` field. Code is one of the following: `invalid`, `notFound`, `unknown`, `unauthorized` and `notAllowed`. Detail can contain anything and should only be used for debugging purposes. 
 
 ## Demo
-Please take a look at the [demo](/demo/index.html) widget for a complete implementation example. Notice the CSS rules to ensure that the content is scrollable on touch devices. 
+Please take a look at the [demo](/demo/index.html) widget for a complete widget implementation example. To see an example of how to run StreamBIM in embedded mode, see the [embedded demo](/embedded/index.html). Notice the CSS rules to ensure that the content is scrollable on touch devices. 
 
 ## Dependencies
 

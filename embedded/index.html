@@ -1,0 +1,473 @@
+<!doctype html>
+<html>
+  <head>
+    <title>StreamBIM embedded demo</title>
+    <style>
+    html, body {
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+    }
+    body {
+      color: black; 
+    }
+    td, h1 {
+      padding: 12px;
+    }
+    td {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    input, textarea, #screenshotImg {
+      margin-bottom: 8px;
+      width: calc(100% - 8px);
+    }
+    textarea {
+      height: 60px;
+    }
+    .main {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    .content {
+      overflow: scroll!important; 
+      -webkit-overflow-scrolling: touch!important; 
+      flex-basis: 320px;
+      height: 100%;
+    }
+    #streambim_target {
+      flex-grow: 1;
+    }
+    #events {
+      height: 200px; 
+      overflow: scroll;
+      padding: 12px;
+      margin-bottom: 12px;
+      white-space: pre;
+    }
+    #events li {
+      padding: 8px;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <div class="content">
+        <h1>StreamBIM embedded demo</h1>
+        <div id="events"></div>
+        <div id="connecting">
+          Waiting for connection...
+        </div>
+        <div id="buttons" style="display:none;">
+          <table>
+            <tr><td>
+              <button id="getProjectId">Get project ID</button>
+              <button id="getUserEmail">Get user email</button>
+            </td></tr>
+            <tr><td>
+              <button id="getCameraState">Get camera state</button>
+              <button id="setLastCameraState">Set last saved camera state</button>
+              <button id="setLastCameraPosition">Set last saved camera position</button>
+            </td></tr>
+            <tr><td>
+              <input id="guidInput" placeholder="GUID - click on object or move into space"></input>
+              <button id="getSpace">Get space</button>
+              <button id="getObjectInfo">Get object info</button>
+              <button id="gotoSpace">Go to space</button>
+              <button id="highlightObject">Highlight object</button>
+              <button id="deHighlightObject">De-highlight object</button>
+              <button id="hideObject">Hide object</button>
+              <button id="showObject">Show object</button>
+              <button id="findObjectsOfSameTypeBtn">Find objects of same type</button>
+              <button id="findObjectsInSameSystemBtn">Find objects in same system</button>
+              <button id="showObjectsOfSameTypeBtn">Show objects of same type</button>
+              <button id="showObjectsInSameSystemBtn">Show objects in same system</button>
+              <button id="getObjectInfoForAllDoors">Get object info for all doors</button>
+              <button id="resetObjectSearchBtn">Reset object search</button>
+            </td></tr>
+            <tr><td>
+              <button id="deHighlightAllObjects">De-highlight all objects</button>
+              <button id="showAllObjects">Show all objects</button>
+            </td></tr>
+            <tr><td>
+              <textarea id="stateInput" placeholder="JSON state"></textarea>
+              <button id="getViewportState">Get viewport state</button>
+              <button id="setViewportState">Set viewport state</button>
+            </td></tr>
+            <tr><td>
+              <img id="screenshotImg" placeholder="Screenshot">
+              <button id="takeScreenshot">Take 3D screenshot</button>
+            </td></tr>
+          </table>
+        </div>
+      </div>
+      <iframe id="streambim_target"></iframe>
+    </div>
+    <script src="../dist/streambim-widget-api.min.js"></script>
+    <script>
+      var logEvent = function(text) {
+        var element = document.createElement('li');
+        element.textContent = text;
+        eventsContainer = document.getElementById('events');
+        eventsContainer.appendChild(element);
+        eventsContainer.scrollTop = eventsContainer.scrollHeight;
+      };
+
+      var logError = function(name, error) {
+        var text = name + ' failed: ' + error.code;
+        if (error.detail) {
+          text = text + JSON.stringify(error.detail);
+        }
+        logEvent(text);
+      }
+
+      const iframe = document.getElementById('streambim_target');
+      var projectId = promt('Project ID')
+      iframe.src = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+
+      StreamBIM.connectToChild(iframe, {
+        pickedObject: function (result) {
+          logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
+          document.getElementById('guidInput').value = result.guid;
+        },
+        spacesChanged: function (guids) {
+          if (guids.length) {
+            logEvent('Entered space ' + guids[0]);
+          } else {
+            logEvent('Left building');
+          }
+        },
+        cameraChanged: function (cameraState) {
+          logEvent('Camera changed: ' + JSON.stringify(cameraState));
+        }
+      }).then( function () {
+        document.getElementById('connecting').style = 'display:none';
+        document.getElementById('buttons').style = '';
+        logEvent('Widget ready');
+      }).catch( function(error) {
+        logEvent('Connect failed: ' + JSON.stringify(error));
+      });
+
+      var getProjectIdClicked = function () {
+        StreamBIM.getProjectId().then( (result) => {
+          logEvent('Got project ID: ' + result);
+        }).catch( function(error) {
+          logError('getProjectId', error);
+        });
+      }
+
+      var getUserEmailClicked = function () {
+        StreamBIM.getUserEmail().then( (result) => {
+          logEvent('Got user email: ' + result);
+        }).catch( function(error) {
+          logError('getUserEmail failed: ', error);
+        });
+      }
+
+      var getCameraStateClicked = function () {
+        StreamBIM.getCameraState().then( (result) => {
+          logEvent('Got camera state: ' + JSON.stringify(result));
+          window.lastCameraState = result;
+        }).catch( function(error) {
+          logError('getCameraState', error);
+        });
+      }
+
+      var setLastCameraStateClicked = function () {
+        StreamBIM.setCameraState(window.lastCameraState).then( (result) => {
+          logEvent('setCameraState: ' + result);
+        }).catch( function(error) {
+          logError('setCameraState', error);
+        });
+      }
+
+      var setLastCameraPositionClicked = function () {
+        StreamBIM.setCameraPosition(window.lastCameraState.position).then( (result) => {
+          logEvent('setCameraPosition: ' + result);
+        }).catch( function(error) {
+          logError('setCameraPosition', error);
+        });
+      }
+
+      var getSpaceClicked = function () {
+        StreamBIM.getSpaces().then( (result) => {
+          if (result.length > 1) {
+            logEvent('Got spaces: ' + result.join(', '));
+          } else if (result.length == 1) {
+            logEvent('Got space: ' + result[0]);
+          } else {
+            logEvent('No spaces at current location');
+          }
+          document.getElementById('guidInput').value = result[0] || '';
+        }).catch( function(error) {
+          logError('getSpaceClicked', error);
+        });
+      }
+
+      var getObjectInfoClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        if (guid) {
+          StreamBIM.getObjectInfo(guid).then( (result) => {
+            logEvent('Got object info: ' + JSON.stringify(result));
+          }).catch( function(error) {
+            logError('getObjectInfo', error);
+          });
+        } else {
+          logError('Could not get object info: GUID required');
+        }
+      }
+
+      var gotoSpaceClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.gotoSpace(guid).then( (result) => {
+          logEvent('gotoSpace: ' + result);
+        }).catch( function(error) {
+          logError('gotoSpace', error);
+        });
+      }
+
+      var highlightObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.highlightObject(guid).then( (result) => {
+          logEvent('highlightObject: ' + result);
+        }).catch( function(error) {
+          logError('highlightObject', error);
+        });
+      }
+
+      var deHighlightObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.deHighlightObject(guid).then( (result) => {
+          logEvent('deHighlightObject object: ' + result);
+        }).catch( function(error) {
+          logError('deHighlightObject', error);
+        });
+      }
+
+      var deHighlightAllObjectsClicked = function () {
+        StreamBIM.deHighlightAllObjects().then( (result) => {
+          logEvent('deHighlightAllObjects: ' + result);
+        }).catch( function(error) {
+          logError('deHighlightAllObjects', error);
+        });
+      }
+
+      var hideObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.hideObject(guid).then( (result) => {
+          logEvent('hideObject: ' + result);
+        }).catch( function(error) {
+          logError('hideObject', error);
+        });
+      }
+
+      var showObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.showObject(guid).then( (result) => {
+          logEvent('showObject: ' + result);
+        }).catch( function(error) {
+          logError('showObject', error);
+        });
+      }
+
+      var showAllObjectsClicked = function () {
+        StreamBIM.showAllObjects().then( (result) => {
+          logEvent('showAllObjects: ' + result);
+        }).catch( function(error) {
+          logError('showAllObjects', error);
+        });
+      }
+
+      var getViewportStateClicked = function () {
+        StreamBIM.getViewportState().then( (result) => {
+          var stringifiedState = JSON.stringify(result);
+          logEvent('Got viewport state: ' + stringifiedState);
+          document.getElementById('stateInput').value = stringifiedState;
+        }).catch( function(error) {
+          logError('getViewportState', error);
+        });
+      }
+
+      var setViewportStateClicked = function () {
+        var state = JSON.parse(document.getElementById('stateInput').value);
+        StreamBIM.setViewportState(state).then( (result) => {
+          logEvent('setViewportState: ' + result);
+        }).catch( function(error) {
+          logError('setViewportState', error);
+        });
+      }
+
+      var takeScreenshotClicked = function () {
+        StreamBIM.takeScreenshot().then( (result) => {
+          logEvent('Got screenshot');
+          document.getElementById('screenshotImg').src = result;
+        }).catch( function(error) {
+          logError('takeScreenshot', error);
+        });
+      }
+
+      var findObjectsOfSameTypeClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        if (guid) {
+          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+            var typeGuid = selectedObject.properties['Type Object Global Id']
+            if (typeGuid) {
+              var query = {
+                key: 'Type Object Global Id',
+                value: typeGuid,
+                limit: 100
+              }
+              StreamBIM.findObjects(query).then( (result) => {
+                logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
+              }).catch( function(error) {
+                logError('findObjects', error);
+              });
+            } else {
+              throw {code: 'Object has no type object'}
+            }
+          }).catch( function(error) {
+            logError('findObjectsOfSameTypeClicked', error);
+          });
+        } else {
+          logEvent('findObjectsOfSameTypeClicked: GUID required');
+        }
+      }
+
+      var findObjectsInSameSystemClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        if (guid) {
+          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+            var systemGuids = selectedObject.properties['System Global Id']
+            if (systemGuids && systemGuids.length) {
+              var query = {
+                key: 'System Global Id',
+                value: systemGuids[0],
+                limit: 100
+              }
+              StreamBIM.findObjects(query).then( (result) => {
+                logEvent('Objects in same system: \n   - ' + result.join('\n   - '));
+              }).catch( function(error) {
+                logError('findObjects', error);
+              });
+            } else {
+              throw {code: 'Object is not part of any system'}
+            }
+          }).catch( function(error) {
+            logError('showObjectsInSameSystem', error);
+          });
+        } else {
+          logEvent('showObjectsInSameSystem failed: GUID required');
+        }
+      }
+
+      var showObjectsOfSameTypeClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        if (guid) {
+          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+            var typeGuid = selectedObject.properties['Type Object Global Id'].split('~').pop()
+            if (typeGuid) {
+              var query = {
+                key: 'Type Object Global Id',
+                value: typeGuid,
+                limit: 100
+              }
+              StreamBIM.applyObjectSearch(query).then( (result) => {
+                logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
+              }).catch( function(error) {
+                logError('findObjects', error);
+              });
+            } else {
+              throw {code: 'Object has no type object'}
+            }
+          }).catch( function(error) {
+            logError('showObjectsOfSameTypeClicked', error);
+          });
+        } else {
+          logEvent('showObjectsOfSameType: GUID required');
+        }
+      }
+
+      var showObjectsInSameSystemClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        if (guid) {
+          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+            var systemGuids = selectedObject.properties['System Global Id']
+            if (systemGuids && systemGuids.length) {
+              var query = {
+                key: 'System Global Id',
+                value: systemGuids[0],
+                limit: 100
+              }
+              StreamBIM.applyObjectSearch(query).then( (result) => {
+                logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
+              }).catch( function(error) {
+                logError('findObjects', error);
+              });
+            } else {
+              throw {code: 'Object is not part of any system'}
+            }
+          }).catch( function(error) {
+            logError('showObjectsInSameSystemClicked', error);
+          });
+        } else {
+          logEvent('showObjectsInSameSystemClicked: GUID required');
+        }
+      }
+
+      var getObjectInfoForAllDoorsClicked = function () {
+        var query = {
+          filter: {
+            key: '@kind',
+            value: 'Door'
+          },
+          page: {
+            limit: 1000,
+            skip: 0
+          }, 
+          sort: {
+            field: 'Name',
+            descending: false
+          }
+        }
+        StreamBIM.getObjectInfoForSearch(query).then(function(result) {
+          logEvent('Info for all doors: \n   - ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('getObjectInfoForAllDoorsClicked', error);
+        });
+      }
+
+
+      var resetObjectSearchClicked = function () {
+        StreamBIM.resetObjectSearch().then( () => {
+          logEvent('Object search reset');
+        }).catch( function(error) {
+          logError('resetObjectSearch', error);
+        });
+      }
+
+      document.getElementById('getProjectId').addEventListener("click", getProjectIdClicked, false);
+      document.getElementById('getUserEmail').addEventListener("click", getUserEmailClicked, false);
+      document.getElementById('getCameraState').addEventListener("click", getCameraStateClicked, false);
+      document.getElementById('setLastCameraPosition').addEventListener("click", setLastCameraPositionClicked, false);
+      document.getElementById('setLastCameraState').addEventListener("click", setLastCameraStateClicked, false);
+      document.getElementById('getSpace').addEventListener("click", getSpaceClicked, false);
+      document.getElementById('getObjectInfo').addEventListener("click", getObjectInfoClicked, false);
+      document.getElementById('gotoSpace').addEventListener("click", gotoSpaceClicked, false);
+      document.getElementById('highlightObject').addEventListener("click", highlightObjectClicked, false);
+      document.getElementById('deHighlightObject').addEventListener("click", deHighlightObjectClicked, false);
+      document.getElementById('deHighlightAllObjects').addEventListener("click", deHighlightAllObjectsClicked, false);
+      document.getElementById('hideObject').addEventListener("click", hideObjectClicked, false);
+      document.getElementById('showObject').addEventListener("click", showObjectClicked, false);
+      document.getElementById('showAllObjects').addEventListener("click", showAllObjectsClicked, false);
+      document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
+      document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
+      document.getElementById('takeScreenshot').addEventListener("click", takeScreenshotClicked, false);
+      document.getElementById('findObjectsOfSameTypeBtn').addEventListener("click", findObjectsOfSameTypeClicked, false);
+      document.getElementById('findObjectsInSameSystemBtn').addEventListener("click", findObjectsInSameSystemClicked, false);
+      document.getElementById('showObjectsOfSameTypeBtn').addEventListener("click", showObjectsOfSameTypeClicked, false);
+      document.getElementById('showObjectsInSameSystemBtn').addEventListener("click", showObjectsInSameSystemClicked, false);
+      document.getElementById('resetObjectSearchBtn').addEventListener("click", resetObjectSearchClicked, false);
+      document.getElementById('getObjectInfoForAllDoors').addEventListener("click", getObjectInfoForAllDoorsClicked, false);
+    </script>
+  </body>
+</html>

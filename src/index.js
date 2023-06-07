@@ -1,4 +1,4 @@
-import { connectToParent } from 'penpal';
+import { connectToParent, connectToChild } from 'penpal';
 
 /*!
  * StreamBIM widget API
@@ -21,12 +21,28 @@ import { connectToParent } from 'penpal';
           methods: methods
         });
 
-        return this._connection.promise.then( (parent) => {
-          this._parent = parent;
-          Object.keys(parent).forEach( (key) => {
+        return this._connection.promise.then( (connection) => {
+          this._connection = connection;
+          Object.keys(connection).forEach( (key) => {
             this[key] = (params) => {
-              console.assert(this._parent, "StreamBIM parent frame not found");
-              return this._parent[key](params);
+              console.assert(this._connection, "StreamBIM parent frame not found");
+              return this._connection[key](params);
+            }
+          })
+        });
+      },
+      connectToChild(iframe, methods = {}) {
+        this._connection = connectToChild({
+          iframe,
+          methods: methods
+        });
+
+        return this._connection.promise.then( (connection) => {
+          this._connection = connection;
+          Object.keys(connection).forEach( (key) => {
+            this[key] = (params) => {
+              console.assert(this._connection, "StreamBIM child frame not found");
+              return this._connection[key](params);
             }
           })
         });
