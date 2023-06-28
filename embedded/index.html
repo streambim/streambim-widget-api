@@ -78,12 +78,23 @@
               <button id="deHighlightObject">De-highlight object</button>
               <button id="hideObject">Hide object</button>
               <button id="showObject">Show object</button>
+              <button id="gotoObject">Goto object</button>
+            </td></tr>
+            <tr><td>
               <button id="findObjectsOfSameTypeBtn">Find objects of same type</button>
               <button id="findObjectsInSameSystemBtn">Find objects in same system</button>
               <button id="showObjectsOfSameTypeBtn">Show objects of same type</button>
               <button id="showObjectsInSameSystemBtn">Show objects in same system</button>
               <button id="getObjectInfoForAllDoors">Get object info for all doors</button>
+              <button id="getObjectInfoForObjectsWithHeightOver2000Btn">Get object info for all doors more than 2 meters high</button>
+              <button id="zoomToSearchBtn">Zoom to search</button>
               <button id="resetObjectSearchBtn">Reset object search</button>
+            </td></tr>
+            <tr><td>
+              <input id="quickSearchInput" placeholder="Search for objects and properties..."></input>
+              <button id="quickSearchBtn">Quick search</button>
+              <input id="propertyValuesInput" placeholder="psetName~propKey"></input>
+              <button id="propertyValuesBtn">Get values for object property</button>
             </td></tr>
             <tr><td>
               <button id="deHighlightAllObjects">De-highlight all objects</button>
@@ -95,8 +106,15 @@
               <button id="setViewportState">Set viewport state</button>
             </td></tr>
             <tr><td>
+              <textarea id="stylesInput" placeholder="CSS"></textarea>
+              <button id="applyStylesBtn">Apply styles</button>
+            </td></tr>
+            <tr><td>
               <img id="screenshotImg" placeholder="Screenshot">
-              <button id="takeScreenshot">Take 3D screenshot</button>
+              <button id="takeScreenshotBtn">Take 3D screenshot</button>
+            </td></tr>
+            <tr><td>
+              <button id="changeSkyColorBtn">Change sky color</button>
             </td></tr>
           </table>
         </div>
@@ -123,7 +141,8 @@
 
       const iframe = document.getElementById('streambim_target');
       var projectId = prompt('Project ID')
-      iframe.src = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+      // iframe.src = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+      iframe.src = 'http://localhost:4201/#/viewer?projectId=' + projectId + '&embedded=true';
 
       StreamBIM.connectToChild(iframe, {
         pickedObject: function (result) {
@@ -270,6 +289,15 @@
         });
       }
 
+      var gotoObjectClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        StreamBIM.gotoObject(guid).then( (result) => {
+          logEvent('gotoObject: ' + result);
+        }).catch( function(error) {
+          logError('gotoObject', error);
+        });
+      }
+
       var showAllObjectsClicked = function () {
         StreamBIM.showAllObjects().then( (result) => {
           logEvent('showAllObjects: ' + result);
@@ -297,12 +325,48 @@
         });
       }
 
+      var applyStylesClicked = function () {
+        var styles = document.getElementById('stylesInput').value;
+        StreamBIM.applyStyles(styles).then( (result) => {
+          logEvent('applyStyles: ' + result);
+        }).catch( function(error) {
+          logError('applyStyles', error);
+        });
+      }
+
+      var quickSearchClicked = function () {
+        var freetext = document.getElementById('quickSearchInput').value;
+        StreamBIM.quickSearch(freetext).then( (result) => {
+          logEvent('quickSearch: ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('quickSearch', error);
+        });
+      }
+
+      var propertyValuesClicked = function () {
+        var property = document.getElementById('propertyValuesInput').value;
+        StreamBIM.valuesForObjectProperty(property).then( (result) => {
+          logEvent('propertyValues: ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('propertyValues', error);
+        });
+      }
+
       var takeScreenshotClicked = function () {
         StreamBIM.takeScreenshot().then( (result) => {
           logEvent('Got screenshot');
           document.getElementById('screenshotImg').src = result;
         }).catch( function(error) {
           logError('takeScreenshot', error);
+        });
+      }
+
+      var changeSkyColorClicked = function () {
+        let color = `rgb(${(255*Math.random()).toFixed()},${(255*Math.random()).toFixed()},${(255*Math.random()).toFixed()})`
+        StreamBIM.setSkyColor(color).then( (result) => {
+          logEvent('setSkyColor');
+        }).catch( function(error) {
+          logError('setSkyColor', error);
         });
       }
 
@@ -371,7 +435,7 @@
                 value: typeGuid,
                 limit: 100
               }
-              StreamBIM.applyObjectSearch(query).then( (result) => {
+              StreamBIM.applyObjectSearch(query, true).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -398,7 +462,7 @@
                 value: systemGuids[0],
                 limit: 100
               }
-              StreamBIM.applyObjectSearch(query).then( (result) => {
+              StreamBIM.applyObjectSearch(query, true).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -436,6 +500,41 @@
         });
       }
 
+      var getObjectInfoForObjectsWithHeightOver2000Clicked = function () {
+        var query = {
+          filter: {
+            rules: [[{
+              buildingId: '1000',
+              psetName: 'BaseQuantities',
+              propKey: 'Height',
+              propValue: '2000',
+              operator: '>'
+            }]]
+          },
+          page: {
+            limit: 1000,
+            skip: 0
+          }, 
+          sort: {
+            field: 'Name',
+            descending: false
+          }
+        }
+        StreamBIM.getObjectInfoForSearch(query).then(function(result) {
+          logEvent('getObjectInfoForObjectsWithHeightOver2000: \n   - ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('getObjectInfoForObjectsWithHeightOver2000', error);
+        });
+      }
+
+      var zoomToSearchClicked = function () {
+        StreamBIM.zoomToSearchResult().then( () => {
+          logEvent('zoomToSearch');
+        }).catch( function(error) {
+          logError('zoomToSearch', error);
+        });
+      }
+
 
       var resetObjectSearchClicked = function () {
         StreamBIM.resetObjectSearch().then( () => {
@@ -458,16 +557,23 @@
       document.getElementById('deHighlightAllObjects').addEventListener("click", deHighlightAllObjectsClicked, false);
       document.getElementById('hideObject').addEventListener("click", hideObjectClicked, false);
       document.getElementById('showObject').addEventListener("click", showObjectClicked, false);
+      document.getElementById('gotoObject').addEventListener("click", gotoObjectClicked, false);
       document.getElementById('showAllObjects').addEventListener("click", showAllObjectsClicked, false);
       document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
       document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
-      document.getElementById('takeScreenshot').addEventListener("click", takeScreenshotClicked, false);
+      document.getElementById('applyStylesBtn').addEventListener("click", applyStylesClicked, false);
+      document.getElementById('quickSearchBtn').addEventListener("click", quickSearchClicked, false);
+      document.getElementById('propertyValuesBtn').addEventListener("click", propertyValuesClicked, false);
+      document.getElementById('takeScreenshotBtn').addEventListener("click", takeScreenshotClicked, false);
+      document.getElementById('changeSkyColorBtn').addEventListener("click", changeSkyColorClicked, false);
       document.getElementById('findObjectsOfSameTypeBtn').addEventListener("click", findObjectsOfSameTypeClicked, false);
       document.getElementById('findObjectsInSameSystemBtn').addEventListener("click", findObjectsInSameSystemClicked, false);
       document.getElementById('showObjectsOfSameTypeBtn').addEventListener("click", showObjectsOfSameTypeClicked, false);
       document.getElementById('showObjectsInSameSystemBtn').addEventListener("click", showObjectsInSameSystemClicked, false);
+      document.getElementById('zoomToSearchBtn').addEventListener("click", zoomToSearchClicked, false);
       document.getElementById('resetObjectSearchBtn').addEventListener("click", resetObjectSearchClicked, false);
       document.getElementById('getObjectInfoForAllDoors').addEventListener("click", getObjectInfoForAllDoorsClicked, false);
+      document.getElementById('getObjectInfoForObjectsWithHeightOver2000Btn').addEventListener("click", getObjectInfoForObjectsWithHeightOver2000Clicked, false);
     </script>
   </body>
 </html>
