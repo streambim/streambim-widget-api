@@ -164,10 +164,8 @@
           logEvent('Camera changed: ' + JSON.stringify(cameraState));
         },
         beforeInit: function() {
-          StreamBIM.setStyles({
-            css: '.message-container {background-color: white;}',
-            skyColor: 'white'
-          })
+          StreamBIM.setStyles('.message-container {background-color: white;}')
+          StreamBIM.setSkyColor('white')
           StreamBIM.setNavigationMode(1)
         }
       }).then( function () {
