@@ -70,6 +70,10 @@
               <button id="setLastCameraPosition">Set last saved camera position</button>
             </td></tr>
             <tr><td>
+              <button id="setNavigationMode0Btn">Person mode</button>
+              <button id="setNavigationMode1Btn">Spin mode</button>
+            <tr><td>
+            <tr><td>
               <input id="guidInput" placeholder="GUID - click on object or move into space"></input>
               <button id="getSpace">Get space</button>
               <button id="getObjectInfo">Get object info</button>
@@ -205,6 +209,22 @@
           logEvent('setCameraPosition: ' + result);
         }).catch( function(error) {
           logError('setCameraPosition', error);
+        });
+      }
+
+      var setNavigationMode0Clicked = function () {
+        StreamBIM.setNavigationMode(0).then( (result) => {
+          logEvent('setNavigationMode: ' + result);
+        }).catch( function(error) {
+          logError('setNavigationMode', error);
+        });
+      }
+
+      var setNavigationMode1Clicked = function () {
+        StreamBIM.setNavigationMode(1).then( (result) => {
+          logEvent('setNavigationMode: ' + result);
+        }).catch( function(error) {
+          logError('setNavigationMode', error);
         });
       }
 
@@ -548,6 +568,8 @@
       document.getElementById('getUserEmail').addEventListener("click", getUserEmailClicked, false);
       document.getElementById('getCameraState').addEventListener("click", getCameraStateClicked, false);
       document.getElementById('setLastCameraPosition').addEventListener("click", setLastCameraPositionClicked, false);
+      document.getElementById('setNavigationMode0Btn').addEventListener("click", setNavigationMode0Clicked, false);
+      document.getElementById('setNavigationMode1Btn').addEventListener("click", setNavigationMode1Clicked, false);
       document.getElementById('setLastCameraState').addEventListener("click", setLastCameraStateClicked, false);
       document.getElementById('getSpace').addEventListener("click", getSpaceClicked, false);
       document.getElementById('getObjectInfo').addEventListener("click", getObjectInfoClicked, false);
