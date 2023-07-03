@@ -145,8 +145,7 @@
 
       const iframe = document.getElementById('streambim_target');
       var projectId = prompt('Project ID')
-      // iframe.src = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
-      iframe.src = 'http://localhost:4201/#/viewer?projectId=' + projectId + '&embedded=true';
+      iframe.src = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
 
       StreamBIM.connectToChild(iframe, {
         pickedObject: function (result) {
