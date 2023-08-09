@@ -248,7 +248,7 @@ Set to TRUE to expand the widget into fullscreen mode or FALSE to contract the w
 All API calls return promises which, if an error occurs, are rejected with an object which has a `code` and a `detail` field. Code is one of the following: `invalid`, `notFound`, `unknown`, `unauthorized` and `notAllowed`. Detail can contain anything and should only be used for debugging purposes. 
 
 ## Demo
-Please take a look at the [demo](/demo/index.html) widget for a complete widget implementation example. To see an example of how to run StreamBIM in embedded mode, see the [embedded demo](/embedded/index.html). Notice the CSS rules to ensure that the content is scrollable on touch devices. 
+Please take a look at the [demo](/demo/index.html) widget for a complete widget implementation example. To see an example of how to run StreamBIM in embedded mode, see the [embedded demo](/demo_embedded/index.html). Notice the CSS rules to ensure that the content is scrollable on touch devices. 
 
 ## Dependencies
 
