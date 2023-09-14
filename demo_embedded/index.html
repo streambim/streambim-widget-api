@@ -63,6 +63,7 @@
             <tr><td>
               <button id="getProjectId">Get project ID</button>
               <button id="getUserEmail">Get user email</button>
+              <button id="getFloorsBtn">Get floors</button>
             </td></tr>
             <tr><td>
               <button id="getCameraState">Get camera state</button>
@@ -74,15 +75,20 @@
               <button id="setNavigationMode1Btn">Spin mode</button>
             <tr><td>
             <tr><td>
-              <input id="guidInput" placeholder="GUID - click on object or move into space"></input>
+              <input id="guidInput" placeholder="GUID/ID - type, click on object or move into space to populate"></input>
               <button id="getSpace">Get space</button>
               <button id="getObjectInfo">Get object info</button>
               <button id="gotoSpace">Go to space</button>
+              <button id="gotoFloorBtn">Go to floor</button>
               <button id="highlightObject">Highlight object</button>
               <button id="deHighlightObject">De-highlight object</button>
               <button id="hideObject">Hide object</button>
               <button id="showObject">Show object</button>
               <button id="gotoObject">Goto object</button>
+            </td></tr>
+            <tr><td>
+              <button id="deHighlightAllObjects">De-highlight all objects</button>
+              <button id="showAllObjects">Show all objects</button>
             </td></tr>
             <tr><td>
               <button id="findObjectsOfSameTypeBtn">Find objects of same type</button>
@@ -92,6 +98,7 @@
               <button id="getObjectInfoForAllDoors">Get object info for all doors</button>
               <button id="getObjectInfoForObjectsWithHeightOver2000Btn">Get object info for all doors more than 2 meters high</button>
               <button id="zoomToSearchBtn">Zoom to search</button>
+              <button id="searchVisModeBtn">Cycle search visualization mode</button>
               <button id="resetObjectSearchBtn">Reset object search</button>
             </td></tr>
             <tr><td>
@@ -99,10 +106,6 @@
               <button id="quickSearchBtn">Quick search</button>
               <input id="propertyValuesInput" placeholder="psetName~propKey"></input>
               <button id="propertyValuesBtn">Get values for object property</button>
-            </td></tr>
-            <tr><td>
-              <button id="deHighlightAllObjects">De-highlight all objects</button>
-              <button id="showAllObjects">Show all objects</button>
             </td></tr>
             <tr><td>
               <textarea id="stateInput" placeholder="JSON state"></textarea>
@@ -144,12 +147,18 @@
       }
 
       const iframe = document.getElementById('streambim_target');
-      var projectId = prompt('Project ID')
-      iframe.src = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+      // var projectId = prompt('Project ID')
+      // iframe.src = 'https://dev.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+
+      iframe.src = 'http://localhost:4201/#/viewer?projectId=13290&embedded=true'
 
       StreamBIM.connectToChild(iframe, {
         pickedObject: function (result) {
-          logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
+          if (result.point) {
+            logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
+          } else {
+            logEvent('Clicked object "' + result.guid)
+          }
           document.getElementById('guidInput').value = result.guid;
         },
         spacesChanged: function (guids) {
@@ -188,6 +197,14 @@
           logEvent('Got user email: ' + result);
         }).catch( function(error) {
           logError('getUserEmail failed: ', error);
+        });
+      }
+
+      var getFloorsClicked = function () {
+        StreamBIM.getFloors().then( (result) => {
+          logEvent('Got floors: ' + result.map(function(floor){return `${floor.name} (height: ${floor.height.toFixed(2)} - ID: ${floor.id})`}).join(', '));
+        }).catch( function(error) {
+          logError('getFloors', error);
         });
       }
 
@@ -266,6 +283,15 @@
           logEvent('gotoSpace: ' + result);
         }).catch( function(error) {
           logError('gotoSpace', error);
+        });
+      }
+
+      var gotoFloorClicked = function () {
+        var floorId = document.getElementById('guidInput').value;
+        StreamBIM.gotoFloor(floorId).then( (result) => {
+          logEvent('gotoFloor: ' + result);
+        }).catch( function(error) {
+          logError('gotoFloor', error);
         });
       }
 
@@ -559,6 +585,18 @@
         });
       }
 
+      var visMode = 0;
+
+      var searchVisModeClicked = function () {
+        let mode = ['HIDDEN', 'FADED', 'ORIGINAL'][visMode%3];
+        StreamBIM.setSearchVisualizationMode(mode).then( () => {
+          logEvent('setSearchVisualizationMode');
+          visMode++;
+        }).catch( function(error) {
+          logError('setSearchVisualizationMode', error);
+        });
+      }
+
 
       var resetObjectSearchClicked = function () {
         StreamBIM.resetObjectSearch().then( () => {
@@ -569,6 +607,7 @@
       }
 
       document.getElementById('getProjectId').addEventListener("click", getProjectIdClicked, false);
+      document.getElementById('getFloorsBtn').addEventListener("click", getFloorsClicked, false);
       document.getElementById('getUserEmail').addEventListener("click", getUserEmailClicked, false);
       document.getElementById('getCameraState').addEventListener("click", getCameraStateClicked, false);
       document.getElementById('setLastCameraPosition').addEventListener("click", setLastCameraPositionClicked, false);
@@ -578,6 +617,7 @@
       document.getElementById('getSpace').addEventListener("click", getSpaceClicked, false);
       document.getElementById('getObjectInfo').addEventListener("click", getObjectInfoClicked, false);
       document.getElementById('gotoSpace').addEventListener("click", gotoSpaceClicked, false);
+      document.getElementById('gotoFloorBtn').addEventListener("click", gotoFloorClicked, false);
       document.getElementById('highlightObject').addEventListener("click", highlightObjectClicked, false);
       document.getElementById('deHighlightObject').addEventListener("click", deHighlightObjectClicked, false);
       document.getElementById('deHighlightAllObjects').addEventListener("click", deHighlightAllObjectsClicked, false);
@@ -597,6 +637,7 @@
       document.getElementById('showObjectsOfSameTypeBtn').addEventListener("click", showObjectsOfSameTypeClicked, false);
       document.getElementById('showObjectsInSameSystemBtn').addEventListener("click", showObjectsInSameSystemClicked, false);
       document.getElementById('zoomToSearchBtn').addEventListener("click", zoomToSearchClicked, false);
+      document.getElementById('searchVisModeBtn').addEventListener("click", searchVisModeClicked, false);
       document.getElementById('resetObjectSearchBtn').addEventListener("click", resetObjectSearchClicked, false);
       document.getElementById('getObjectInfoForAllDoors').addEventListener("click", getObjectInfoForAllDoorsClicked, false);
       document.getElementById('getObjectInfoForObjectsWithHeightOver2000Btn').addEventListener("click", getObjectInfoForObjectsWithHeightOver2000Clicked, false);
