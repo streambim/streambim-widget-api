@@ -117,8 +117,15 @@
               <button id="applyStylesBtn">Apply styles</button>
             </td></tr>
             <tr><td>
+              <textarea id="colorCodingInput" placeholder='{"362dngm4r7CQ3PvZ2b5Y_N":"red","362dngm4r7CQ3PvZ2b5Y_8":"white","362dngm4r7CQ3PvZ2b5Y_9":"blue","362dngm4r7CQ3PvZ2b5Y$e":"green"}'></textarea>
+              <button id="colorCodeObjectsBtn">Color code objects</button>
+              <button id="colorCodeSpacesBtn">Color code spaces</button>
+            </td></tr>
+            <tr><td>
               <img id="screenshotImg" placeholder="Screenshot">
-              <button id="takeScreenshotBtn">Take 3D screenshot</button>
+              <button id="takeScreenshotBtn">Get 3D screenshot</button>
+              <button id="getOverviewMapImageBtn">Get overview map image</button>
+              <button id="getDetailMapImageBtn">Get detail map image</button>
             </td></tr>
             <tr><td>
               <button id="changeSkyColorBtn">Change sky color</button>
@@ -167,6 +174,9 @@
           } else {
             logEvent('Left building');
           }
+        },
+        floorChanged: function (floorId) {
+          logEvent('Entered floor ' + floorId);
         },
         cameraChanged: function (cameraState) {
           logEvent('Camera changed: ' + JSON.stringify(cameraState));
@@ -384,6 +394,43 @@
         });
       }
 
+      var colorCodeObjectsClicked = function () {
+        let colorCoding;
+        let input = document.getElementById('colorCodingInput').value;
+        if (input) {
+          colorCoding = JSON.parse(input)
+        } else {
+          colorCoding = {
+            '362dngm4r7CQ3PvZ2b5Y_N': 'red',
+            '362dngm4r7CQ3PvZ2b5Y_8': 'white',
+            '362dngm4r7CQ3PvZ2b5Y_9': 'blue',
+            '362dngm4r7CQ3PvZ2b5Y$e': 'green'
+          }
+        }
+        StreamBIM.colorCodeObjects(colorCoding).then( (result) => {
+          logEvent('colorCodeObjects: ' + result);
+        }).catch( function(error) {
+          logError('colorCodeObjects', error);
+        });
+      }
+
+      var colorCodeSpacesClicked = function () {
+        let colorCoding;
+        let input = document.getElementById('colorCodingInput').value;
+        if (input) {
+          colorCoding = JSON.parse(input)
+        } else {
+          colorCoding = {
+            '3PB1onecrDh9eyOs0PIUei': 'red'
+          }
+        }
+        StreamBIM.colorCodeSpaces(colorCoding).then( (result) => {
+          logEvent('colorCodeSpaces: ' + result);
+        }).catch( function(error) {
+          logError('colorCodeSpaces', error);
+        });
+      }
+
       var quickSearchClicked = function () {
         var freetext = document.getElementById('quickSearchInput').value;
         StreamBIM.quickSearch(freetext).then( (result) => {
@@ -408,6 +455,24 @@
           document.getElementById('screenshotImg').src = result;
         }).catch( function(error) {
           logError('takeScreenshot', error);
+        });
+      }
+
+      var getOverviewMapImageClicked = function () {
+        StreamBIM.getMapImage({width: 1024, height: 768, resolution: 5}).then( (result) => {
+          logEvent('Got map image');
+          document.getElementById('screenshotImg').src = result;
+        }).catch( function(error) {
+          logError('getMapImage', error);
+        });
+      }
+
+      var getDetailMapImageClicked = function () {
+        StreamBIM.getMapImage({width: 1024, height: 768, resolution: 1}).then( (result) => {
+          logEvent('Got map image');
+          document.getElementById('screenshotImg').src = result;
+        }).catch( function(error) {
+          logError('getMapImage', error);
         });
       }
 
@@ -628,9 +693,13 @@
       document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
       document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
       document.getElementById('applyStylesBtn').addEventListener("click", applyStylesClicked, false);
+      document.getElementById('colorCodeObjectsBtn').addEventListener("click", colorCodeObjectsClicked, false);
+      document.getElementById('colorCodeSpacesBtn').addEventListener("click", colorCodeSpacesClicked, false);
       document.getElementById('quickSearchBtn').addEventListener("click", quickSearchClicked, false);
       document.getElementById('propertyValuesBtn').addEventListener("click", propertyValuesClicked, false);
       document.getElementById('takeScreenshotBtn').addEventListener("click", takeScreenshotClicked, false);
+      document.getElementById('getOverviewMapImageBtn').addEventListener("click", getOverviewMapImageClicked, false);
+      document.getElementById('getDetailMapImageBtn').addEventListener("click", getDetailMapImageClicked, false);
       document.getElementById('changeSkyColorBtn').addEventListener("click", changeSkyColorClicked, false);
       document.getElementById('findObjectsOfSameTypeBtn').addEventListener("click", findObjectsOfSameTypeClicked, false);
       document.getElementById('findObjectsInSameSystemBtn').addEventListener("click", findObjectsInSameSystemClicked, false);
