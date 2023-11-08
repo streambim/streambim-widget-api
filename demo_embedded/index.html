@@ -122,6 +122,15 @@
               <button id="colorCodeSpacesBtn">Color code spaces</button>
             </td></tr>
             <tr><td>
+              <textarea id="layersInput" placeholder='{"HAVNEPARKENFK1ARK62202301231343":false,"HAVNEPARKENFK1RIE29202301231352":false,"HAVNEPARKENFK1RIV39202301231350":false}'></textarea>
+              <button id="getLayersBtn">Get layers</button>
+              <button id="setLayersBtn">Set layers</button>
+            </td></tr>
+            <tr><td>
+              <button id="showGridsBtn">Show grids</button>
+              <button id="hideGridsBtn">Hide grids</button>
+            </td></tr>
+            <tr><td>
               <img id="screenshotImg" placeholder="Screenshot">
               <button id="takeScreenshotBtn">Get 3D screenshot</button>
               <button id="getOverviewMapImageBtn">Get overview map image</button>
@@ -436,6 +445,49 @@
         });
       }
 
+      var getLayersClicked = function () {
+        StreamBIM.getLayers().then( (result) => {
+          logEvent('Layers: ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('getLayers', error);
+        });
+      }
+
+      var setLayersClicked = function () {
+        let layers;
+        let input = document.getElementById('layersInput').value;
+        if (input) {
+          layers = JSON.parse(input)
+        } else {
+          layers = {
+            "HAVNEPARKENFK1ARK62202301231343": false,
+            "HAVNEPARKENFK1RIE29202301231352":false,
+            "HAVNEPARKENFK1RIV39202301231350":false
+          }
+        }
+        StreamBIM.setLayers(layers).then( (result) => {
+          logEvent('setLayers: ' + result);
+        }).catch( function(error) {
+          logError('setLayers', error);
+        });
+      }
+
+      var showGridsClicked = function () {
+        StreamBIM.showGrids().then( (result) => {
+          logEvent('Show grids: ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('showGrids', error);
+        });
+      }
+
+      var hideGridsClicked = function () {
+        StreamBIM.hideGrids().then( (result) => {
+          logEvent('Hide grids: ' + JSON.stringify(result));
+        }).catch( function(error) {
+          logError('hideGrids', error);
+        });
+      }
+
       var quickSearchClicked = function () {
         var freetext = document.getElementById('quickSearchInput').value;
         StreamBIM.quickSearch(freetext).then( (result) => {
@@ -718,6 +770,10 @@
       document.getElementById('applyStylesBtn').addEventListener("click", applyStylesClicked, false);
       document.getElementById('colorCodeObjectsBtn').addEventListener("click", colorCodeObjectsClicked, false);
       document.getElementById('colorCodeSpacesBtn').addEventListener("click", colorCodeSpacesClicked, false);
+      document.getElementById('getLayersBtn').addEventListener("click", getLayersClicked, false);
+      document.getElementById('setLayersBtn').addEventListener("click", setLayersClicked, false);
+      document.getElementById('showGridsBtn').addEventListener("click", showGridsClicked, false);
+      document.getElementById('hideGridsBtn').addEventListener("click", hideGridsClicked, false);
       document.getElementById('quickSearchBtn').addEventListener("click", quickSearchClicked, false);
       document.getElementById('propertyValuesBtn').addEventListener("click", propertyValuesClicked, false);
       document.getElementById('takeScreenshotBtn').addEventListener("click", takeScreenshotClicked, false);

@@ -214,6 +214,32 @@ Filter the 3D scene to show only objects matching the filter. See `findObjects(q
 
 ### `showAllObjects()`
 
+### `showGrids()`
+
+### `hideGrids()`
+
+### `getLayers()`
+Returns a list of layers with their visibility status in this form
+```javascript
+{
+  layername_1: true,
+  layername_2: true,
+  layername_3: false,
+  ...
+}
+```
+
+### `setLayers(layers)`
+Sets the visibility of the layers. Takes an object of the form
+```javascript
+{
+  layername_1: true,
+  layername_2: true,
+  layername_3: false,
+  ...
+}
+```
+
 ### `getViewportState()`
 Returns a promise which is resolved with an object containing the entire viewport state, including camera position and rotation, hidden- and highlighted objects, hidden layers and clipping planes. 
 
