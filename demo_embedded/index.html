@@ -130,6 +130,9 @@
             <tr><td>
               <button id="changeSkyColorBtn">Change sky color</button>
             </td></tr>
+            <tr><td>
+              <button id="getAnnotatedFloorplanBtn">Get annotated floorplan for pick point</button>
+            </td></tr>
           </table>
         </div>
       </div>
@@ -167,6 +170,7 @@
             logEvent('Clicked object "' + result.guid)
           }
           document.getElementById('guidInput').value = result.guid;
+          window.pickPoint = result.point;
         },
         spacesChanged: function (guids) {
           if (guids.length) {
@@ -179,6 +183,7 @@
           logEvent('Entered floor ' + floorId);
         },
         cameraChanged: function (cameraState) {
+          window.cameraState = cameraState;
           logEvent('Camera changed: ' + JSON.stringify(cameraState));
         },
         beforeInit: function() {
@@ -671,6 +676,24 @@
         });
       }
 
+      var getAnnotatedFloorplanClicked = function () {
+        let point = window.pickPoint || window.cameraState.position;
+        if (point) {
+          StreamBIM.getAnnotatedFloorplan(point).then( (res) => {
+            let anchor = document.createElement("a");
+            anchor.href = res
+            anchor.download = 'Document.pdf'
+            anchor.target = "_blank"
+            anchor.click()
+            anchor.remove()
+          }).catch( function(error) {
+            logError('resetObjectSearch', error);
+          });
+        } else {
+          alert('Move or pick in the scene to get a coordinate first')
+        }
+      }
+
       document.getElementById('getProjectId').addEventListener("click", getProjectIdClicked, false);
       document.getElementById('getFloorsBtn').addEventListener("click", getFloorsClicked, false);
       document.getElementById('getUserEmail').addEventListener("click", getUserEmailClicked, false);
@@ -710,6 +733,7 @@
       document.getElementById('resetObjectSearchBtn').addEventListener("click", resetObjectSearchClicked, false);
       document.getElementById('getObjectInfoForAllDoors').addEventListener("click", getObjectInfoForAllDoorsClicked, false);
       document.getElementById('getObjectInfoForObjectsWithHeightOver2000Btn').addEventListener("click", getObjectInfoForObjectsWithHeightOver2000Clicked, false);
+      document.getElementById('getAnnotatedFloorplanBtn').addEventListener("click", getAnnotatedFloorplanClicked, false);
     </script>
   </body>
 </html>
