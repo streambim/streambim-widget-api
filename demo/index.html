@@ -97,6 +97,11 @@
             <button id="expandBtn">Expand</button>
             <button id="contractBtn">Contract</button>
           </td></tr>
+          <tr><td>
+            <input id="psetInput" placeholder="pset"></input>
+            <input id="propertyKeyInput" placeholder="propertyKey"></input>
+            <button id="colorCodeByPropertyBtn">Color code</button>
+            <button id="resetColorCodeByPropertyBtn">Reset</button>
         </table>
       </div>
     </div>
@@ -481,6 +486,25 @@
         });
       }
 
+      var colorCodeByPropertyClicked = function () {
+        var pset = document.getElementById('psetInput').value;
+        var propertyKey = document.getElementById('propertyKeyInput').value;
+
+        StreamBIM.colorCodeByProperty({pset, propertyKey}).then( (result) => {
+          logEvent('colorCodeByProperty: ' + result);
+        }).catch( function(error) {
+          logError('colorCodeByProperty', error);
+        });
+      }
+
+      var resetColorCodeByPropertyClicked = function () {
+        StreamBIM.colorCodeByProperty(null).then( (result) => {
+          logEvent('resetColorCodeByProperty: ' + result);
+        }).catch( function(error) {
+          logError('resetColorCodeByProperty', error);
+        });
+      }
+
       document.getElementById('getProjectId').addEventListener("click", getProjectIdClicked, false);
       document.getElementById('getUserEmail').addEventListener("click", getUserEmailClicked, false);
       document.getElementById('getCameraState').addEventListener("click", getCameraStateClicked, false);
@@ -508,6 +532,8 @@
       document.getElementById('showObjectsInSameSystemBtn').addEventListener("click", showObjectsInSameSystemClicked, false);
       document.getElementById('resetObjectSearchBtn').addEventListener("click", resetObjectSearchClicked, false);
       document.getElementById('getObjectInfoForAllDoors').addEventListener("click", getObjectInfoForAllDoorsClicked, false);
+      document.getElementById('colorCodeByPropertyBtn').addEventListener("click", colorCodeByPropertyClicked, false);
+      document.getElementById('resetColorCodeByPropertyBtn').addEventListener("click", resetColorCodeByPropertyClicked, false);
     </script>
   </body>
 </html>
