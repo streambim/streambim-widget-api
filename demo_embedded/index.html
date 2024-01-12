@@ -117,6 +117,10 @@
               <button id="applyStylesBtn">Apply styles</button>
             </td></tr>
             <tr><td>
+              <textarea id="customObjectInput" placeholder='{"name": "Custom object", "center": [0.0, 0.0, 0.0]}'></textarea>
+              <button id="customObjectBtn">Add object</button>
+            </td></tr>
+            <tr><td>
               <textarea id="colorCodingInput" placeholder='{"362dngm4r7CQ3PvZ2b5Y_N":"red","362dngm4r7CQ3PvZ2b5Y_8":"white","362dngm4r7CQ3PvZ2b5Y_9":"blue","362dngm4r7CQ3PvZ2b5Y$e":"green"}'></textarea>
               <button id="colorCodeObjectsBtn">Color code objects</button>
               <button id="colorCodeSpacesBtn">Color code spaces</button>
@@ -169,7 +173,7 @@
       // var projectId = prompt('Project ID')
       // iframe.src = 'https://dev.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
 
-      iframe.src = 'http://localhost:4201/#/viewer?projectId=13290&embedded=true'
+      iframe.src = 'http://localhost:4201/#/viewer?projectId=1113&embedded=true'
 
       StreamBIM.connectToChild(iframe, {
         pickedObject: function (result) {
@@ -442,6 +446,21 @@
           logEvent('colorCodeSpaces: ' + result);
         }).catch( function(error) {
           logError('colorCodeSpaces', error);
+        });
+      }
+
+      var createObjectClicked = function () {
+        let objectInfo;
+        let input = document.getElementById('customObjectInput').value;
+        if (input) {
+          objectInfo = JSON.parse(input)
+        } else {
+          objectInfo = { name: 'Custom object', center: [0.0, 0.0, 0.0] }
+        }
+        StreamBIM.createObject(objectInfo).then( (result) => {
+          logEvent('Object created: ' + result);
+        }).catch( function(error) {
+          logError('create object error: ', error);
         });
       }
 
@@ -768,6 +787,7 @@
       document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
       document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
       document.getElementById('applyStylesBtn').addEventListener("click", applyStylesClicked, false);
+      document.getElementById('customObjectBtn').addEventListener("click", createObjectClicked, false);
       document.getElementById('colorCodeObjectsBtn').addEventListener("click", colorCodeObjectsClicked, false);
       document.getElementById('colorCodeSpacesBtn').addEventListener("click", colorCodeSpacesClicked, false);
       document.getElementById('getLayersBtn').addEventListener("click", getLayersClicked, false);
