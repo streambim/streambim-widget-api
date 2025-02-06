@@ -90,6 +90,10 @@
             <button id="takeScreenshot">Take 3D screenshot</button>
           </td></tr>
           <tr><td>
+            <img id="annotatedFloorplanImg" placeholder="AnnotatedFloorplan">
+            <button id="getAnnotatedFloorplanBtn">Get annotated floorplan</button>
+          </td></tr>
+          <tr><td>
             <button id="showExpandBtn">Show expand button</button>
             <button id="hideExpandBtn">Hide expand button</button>
           </td></tr>
@@ -315,6 +319,22 @@
         });
       }
 
+      var getAnnotatedFloorplanClicked = function () {
+        var guid = document.getElementById('guidInput').value;
+        if (guid) {
+          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+            StreamBIM.getAnnotatedFloorplan(selectedObject.center).then( (result) => {
+              logEvent('Got annotated floorplan');
+              document.getElementById('screenshotImg').src = result;
+            }).catch( function(error) {
+              logError('getAnnotatedFloorplan', error);
+            });
+          }).catch( function(error) {
+            logError('getObjectInfo', error);
+          });
+        }
+      }
+
       var showExpandBtnClicked = function () {
         StreamBIM.setShowExpandButton(true).then( (result) => {
           logEvent('Showing expand button');
@@ -532,6 +552,7 @@
       document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
       document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
       document.getElementById('takeScreenshot').addEventListener("click", takeScreenshotClicked, false);
+      document.getElementById('getAnnotatedFloorplanBtn').addEventListener("click", getAnnotatedFloorplanClicked, false);
       document.getElementById('showExpandBtn').addEventListener("click", showExpandBtnClicked, false);
       document.getElementById('hideExpandBtn').addEventListener("click", hideExpandBtnClicked, false);
       document.getElementById('expandBtn').addEventListener("click", expandClicked, false);
