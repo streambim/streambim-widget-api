@@ -1,6 +1,8 @@
 # streambim-widget-api
 A JavaScript library for interacting with StreamBIM from within an embedded widget, as well as for using StreamBIM in embedded mode.
 
+Embed the StreamBIM viewer in your own page/app and control it via a promise‑based JavaScript API. This README consolidates the behavior shown in the demo apps so you can quickly wire up integrations.
+
 ## Integration
 
 StreamBIM widgets have to be whitelisted and then enabled per StreamBIM project. Please contact support@rendra.io if you want to set up a custom widget for one or more projects. 
@@ -11,14 +13,51 @@ If your widget requires authentication you have two options:
 1. Handle the authentication in the widget itself
 2. Use OpenID Connect and provide us with your identity server etc. StreamBIM will then open your login screen in a popup and persist the token per user across sessions.
 
-## Installation
+> **TL;DR**
+> 1) Load `streambim-widget-api.min.js`.
+> 2) `StreamBIM.connectToChild(iframe, callbacks)` to establish a connection.
+> 3) Call API methods on the returned `StreamBIM` proxy (they all return Promises).
 
-### Using npm
 
-`npm install streambim-widget-api --save`
+## Contents
+- [Install & Build](#install--build)
+- [Quick Start](#quick-start)
+- [Events (callbacks you can subscribe to)](#events-callbacks-you-can-subscribe-to)
+- [Authentication](#authentication)
+- [Styling & UI Controls](#styling--ui-controls)
+- [API Reference](#api-reference)
+  - [Project & User](#project--user)
+  - [Camera & Viewport](#camera--viewport)
+  - [Navigation](#navigation)
+  - [Object Visibility & Highlighting](#object-visibility--highlighting)
+  - [Object & Space Info](#object--space-info)
+  - [Search & Sets](#search--sets)
+  - [Color Coding](#color-coding)
+  - [Layers & Grids](#layers--grids)
+  - [Screenshots & Maps](#screenshots--maps)
+  - [Annotations / Custom Objects](#annotations--custom-objects)
+  - [UI State](#ui-state)
+  - [Low‑level API](#lowlevel-api)
+- [Examples](#examples)
 
-And import the library into your code. 
+---
 
+## Install & Build
+Include the distributed bundle in your page (from `dist/` in this repo or your build pipeline):
+
+```html
+<script src="streambim-widget-api.min.js"></script>
+```
+
+You host the StreamBIM viewer in an `<iframe>` that points to your project/building and set `embedded=true` in the hash:
+
+```html
+<iframe id="streambim_target" src="https://<your-streambim-host>/#/viewer?projectId=...&embedded=true"></iframe>
+```
+
+---
+
+## Quick Start
 To run a widget inside StreamBIM, call something like this from your widget:
 
 ```javascript
@@ -55,264 +94,176 @@ StreamBIM.connectToChild(iframe, methods).then(function() {
   console.log('Connected!');
 });
 ```
+All API calls below return a **`Promise`**.
 
-For full list of supported methods, see Usage below.
+---
 
-### CDN
+## Events (callbacks you can subscribe to)
+Register these in the second argument to `connectToChild(iframe, callbacks)`:
 
-We don't currently have a CDN solution, but you can download, bundle and load the [minified script](https://raw.githubusercontent.com/streambim/streambim-widget-api/master/dist/streambim-widget-api.min.js), in which case the
-library will be available on `window.StreamBIM`
+- **`pickedObject(result)`** → Fires when the user clicks an object. `result` contains `{ guid, point? }` where `point` is `[x,y,z]` if available.
+- **`spacesChanged(guids)`** → When the active space changes (enter/leave), provides current space GUID(s).
+- **`floorChanged(floorId)`** → When the active floor changes.
+- **`cameraChanged(cameraState)`** → On camera state updates; useful for persisting/restoring view.
+- **`beforeInit()`** → Hook called before init; you can set styles, sky color, nav mode, hide UI, perform initial commands, etc.
 
-```html
-<script src="streambim-widget-api.min.js"></script>
-<script>
-  window.StreamBIM.connect().then(function() {
-    console.log('Connected!');
-  });
-</script>
-```
-## Usage
+---
 
-```javascript
-// From within a widget
+## Authentication
+- **`setAuthToken(token: string): Promise<boolean>`** — Provide a bearer token the embedded viewer should use for API requests. Call this in `beforeInit` if you don’t rely on existing session.
 
-StreamBIM.connect({
-  pickedObject: function (result) {
-    console.log('Clicked at ' + result.guid);
-  },
-  spacesChanged: function (guids) {
-    console.log('Entered space: ' + guids[0]);
-  }
-}).then( function () {
-  console.log('Widget ready');
+---
 
-  StreamBIM.getCameraState().then( (result) => {
-    console.log('Got camera state: ', result);
-  });
-});
+## Styling & UI Controls
+- **`setStyles(css: string): Promise<boolean>`** — Inject CSS into the embedded viewer (e.g., hide buttons, recolor UI).
+- **`setSkyColor(color: string): Promise<boolean>`** — Change the 3D background (e.g., `'white'`, `'#000'`, `'rgb(10,20,30)'`).
+- **`setNavigationMode(mode: 0|1): Promise<boolean>`** — 0 = Person (walk), 1 = Spin (orbit).
+- **`setExpanded(bool: boolean): Promise<boolean>`** — Expand/collapse the embedded widget container (if supported by host page).
+- **`setShowExpandButton(bool: boolean): Promise<boolean>`** — Show/hide the expand button.
+- **`toggleShowAllFloors(bool: boolean): Promise<boolean>`** — Toggle multi‑floor grid view on/off.
 
+---
 
-// From a parent running StreamBIM in embedded mode
-StreamBIM.connectToChild(iframe, {
-  pickedObject: function (result) {
-    console.log('Clicked at ' + result.guid);
-  },
-  spacesChanged: function (guids) {
-    console.log('Entered space: ' + guids[0]);
-  }
-}).then( function () {
-  console.log('Widget ready');
+## API Reference
 
-  StreamBIM.getCameraState().then( (result) => {
-    console.log('Got camera state: ', result);
-  });
-});
-```
+### Project & User
+- **`getProjectId(): Promise<string>`** — Returns current project ID.
+- **`getUserEmail(): Promise<string>`** — Returns logged‑in user’s email/ID.
 
-## API
+### Camera & Viewport
+- **`getCameraState(): Promise<CameraState>`** — Get the current camera/position/target/up vectors etc.
+- **`setCameraState(state: CameraState): Promise<boolean>`** — Set the full camera state.
+- **`setCameraPosition(position: [number,number,number]): Promise<boolean>`** — Move camera to world position.
+- **`getViewportState(): Promise<any>`** — Get full viewport (camera + extra viewer state) as a serializable object.
+- **`setViewportState(state: any): Promise<boolean>`** — Restore viewport state.
+- **`applyViewpoint(viewpoint: any): Promise<boolean>`** — Apply a saved viewpoint (semantic shortcut for setting camera & layers/etc.).
 
-The API is promise based, which means all functions below return promises. 
+### Navigation
+- **`gotoObject(guid: string): Promise<boolean>`** — Navigate camera to object.
+- **`gotoSpace(guid: string): Promise<boolean>`** — Navigate camera to space by GUID.
+- **`gotoFloor(floorId: string|number): Promise<boolean>`** — Jump to floor.
+- **`goHome(): Promise<boolean>`** — Return to home/start view (if configured).
 
-### `connect(callbacks)`
+### Object Visibility & Highlighting
+- **`highlightObject(guid: string): Promise<boolean>`** — Highlight (select) object.
+- **`deHighlightObject(guid: string): Promise<boolean>`** — Remove highlight from a single object.
+- **`deHighlightAllObjects(): Promise<boolean>`** — Clear all highlights.
+- **`hideObject(guid: string): Promise<boolean>`** — Hide a single object by GUID.
+- **`showObject(guid: string): Promise<boolean>`** — Show a previously hidden object.
+- **`showAllObjects(): Promise<boolean>`** — Reset hidden state for all objects.
+- **`highlightSystem(guid: string): Promise<boolean>`** — Highlight all objects belonging to a system.
 
-This establishes the connection from the widget to StreamBIM. The function returns a promise which has to be fulfilled before any other API calls can be made. 
+### Object & Space Info
+- **`getObjectInfo(guid: string): Promise<ObjectInfo>`** — Fetch full IFC object info & properties.
+- **`getFloors(): Promise<Array<{id:string|number,name:string,height:number}>>`** — All floors including height.
+- **`getSpaces(): Promise<string[]>`** — Current space GUIDs where the camera is located.
+- **`valuesForObjectProperty(prop: string): Promise<any[]>`** — Distinct values for a `psetName~propKey` pair across the model.
 
-### `connectToChild(iframe, callbacks)`
+### Search & Sets
+- **`findObjects(query: { key: string, value: string, limit?: number }): Promise<string[]>`** — Find GUIDs matching a property filter.
+- **`applyObjectSearch(query: ObjectSearchQuery, replace?: boolean): Promise<string[]>`** — Apply a search as the *active* selection (optionally replacing any current set). Supports structured rules, paging and sorting.
+- **`getObjectInfoForSearch(query: ObjectSearchQuery): Promise<ObjectInfo[]>`** — Run a search and return info for the result set.
+- **`resetObjectSearch(): Promise<boolean>`** — Clear active search/selection.
+- **`setSearchVisualizationMode(mode: 'HIDDEN'|'FADED'|'ORIGINAL'): Promise<boolean>`** — How non‑matching elements are shown while a search is active.
+- **`zoomToSearchResult(): Promise<boolean>`** — Frame camera to the current active selection.
+- **`quickSearch(freetext: string): Promise<any>`** — Search objects/properties by free text; returns matches for UI display.
 
-This establishes the connection from the parent to StreamBIM in embedded mode. The function returns a promise which has to be fulfilled before any other API calls can be made. 
+**Search query shape** (examples):
+```js
+// simple key/value
+{ key: 'System Global Id', value: '08CWGl08rCWBFXLXyoG6Rs', limit: 100 }
 
-##### Callbacks
-
-* `pickedObject` (function, optional) Function to be called whenever the user picks an object in StreamBIM. The function has one argument, which is an object containing `point` - the picked 3D coordinate and `guid` - the GUID of the picked object.
-
-* `spacesChanged` (function, optional) Function to be called whenever the user enteres or leaves a space. The function has one argument which is an array of IFC space GUIDs, sorted from the smallest to the largest space. 
-
-* `cameraChanged` (function, optional) Function to be called whenever the user moves or rotates the camera. The function has one argument which holds the camera position (vector) and orientation (quaternion). This complies to the IFC/BCF coordinate system where position (0,0,0) is the model origin and orientation (0,0,0,0) is north. 
-
-* `didExpand` (function, optional) Function to be called whenever the widget is expanded into fullscreen mode, either using the widget API or by the user clicking the expand/contract button in the panel header. 
-
-* `didContract` (function, optional) Function to be called whenever the widget is contracted into side panel mode, either using the widget API or by the user clicking the expand/contract button in the panel header. 
-
-
-### `getProjectId()`
-Returns a promise which is resolved with the project's ID.
-
-### `getUserEmail()`
-Returns a promise which is resolved with the authenticated user's email. 
-
-### `getCameraState()`
-Returns a promise which is resolved with an object containing the camera's position and quaternion. 
-
-### `setCameraState(state)`
-Takes an object of the form 
-```javascript
-{
-  position: [x, y, z],
-  quaternion: [x, y, z, w]
-}
-```
-and applies it to the user's camera. 
-
-### `setCameraPosition([x, y, z])`
-Moves the camera to position (x, y, z) without modifying the camera's rotation. 
-
-### `getSpaces()`
-Returns a promise which is resolved with an array of GUIDs of the spaces the user's camera is currently inside. The spaces are sorted form the smallers to the largest.
-
-### `getObjectInfo(guid)`
-Returns a promise which is resolved with an object with various information about the object. 
-
-### `gotoSpace(guid)`
-Move the camera to the center of the space.
-
-### `highlightObject(guid)`
-
-### `deHighlightObject(guid)`
-
-### `deHighlightAllObjects()`
-
-### `hideObject(guid)`
-
-### `showObject(guid)`
-
-### `findObjects(query)`
-Returns a promise which is resolved with an an array of GUIDs for objects matching the query. 
-
-##### Query options
-
-* `filter.key` The key for the property to search for
-* `filter.value` The value of the property to search for
-* `page.limit` and `page.skip` for pagination
-* `sort.field` and `sort.descending` for sorting (only applies to `getObjectInfoForSearch`)
-* `fieldUnion` used for getObjectInfoForSearch only. If true, it returns all properies for all objects. If false, it returns only basic properties. 
-
-```javascript
+// IFC rules with operators and paging/sort
 {
   filter: {
-    key: "Type Object Global Id",
-    value: "1a7mCik3D1IgMeWf2ZMmvT"
+    rules: [[{
+      buildingId: '1000', psetName: 'BaseQuantities', propKey: 'Height', propValue: '2000', operator: '>'
+    }]]
   },
-  page: {
-    limit: 10,
-    skip: 0
-  },
-  sort: {
-    field: 'ID',
-    descending: false
-
-  }
+  page: { limit: 1000, skip: 0 },
+  sort: { field: 'Name', descending: false }
 }
 ```
 
-The following example demonstrates how to search for objects, apply the results to the 3D scene, and set the visualization mode:
+### Color Coding
+- **`colorCodeObjects(map: Record<GUID,string>): Promise<boolean>`** — Color code objects by GUID→color (hex). Clears color coding when empty map.
+- **`colorCodeObjectsWithLegends({ data: Record<GUID,string>, legends: Record<string,string> }): Promise<boolean>`** — Color code objects and display legend labels/colors.
+- **`colorCodeSpaces(map: Record<GUID,string>): Promise<boolean>`** — Color code spaces by GUID→color (hex). Clears color coding when empty map.
+- **`colorCodeSpacesWithLegends({ data: Record<GUID,string>, legends?: Record<string,string> }): Promise<boolean>`** — Color code spaces by GUID with optional legends.
+- **`colorCodeByProperty({ pset?: string, propertyKey?: string } = {}): Promise<boolean>`** — Auto color‑code by property value (viewer decides buckets/colors).
 
-Tip: Use browser developer tools to inspect network requests after performing a search in StreamBIM. Find the "ifc-searches" request, and examine the request payload for search parameters.
+### Layers & Grids
+- **`getLayers(): Promise<Record<string, boolean>>`** — Current layer visibility map.
+- **`setLayers(layers: Record<string, boolean>): Promise<boolean>`** — Apply a layer visibility map.
+- **`showGrids(): Promise<boolean>`** — Show grid lines.
+- **`hideGrids(): Promise<boolean>`** — Hide grid lines.
 
-```javascript
-// Define search rules and create query object for search
-let querySearch = {
-    filter: {
-        rules: [[{
-            psetName: "BIP",
-            propKey: "TypeID",
-            propType: "str",
-            propValue: "123456",
-            buildingId: "1000"
-        }]]
-    },
-    page: { limit: 10, skip: 0 },
-    sort: { field: 'BIP.TypeID', descending: false }
-};
+### Screenshots & Maps
+- **`takeScreenshot(): Promise<dataURL>`** — PNG data URL of current 3D view.
+- **`getMapImage(opts: { width: number, height: number, resolution: number }): Promise<dataURL>`** — Generate overview/detail map image (resolution in meters/pixel).
+- **`getAnnotatedFloorplan(position: [number,number,number]): Promise<dataURL|blobURL>`** — Produce a floorplan PDF with an annotation marker near a 3D pick/camera position (use `pickedObject.point` or `cameraState.position`).
 
-// Perform search and apply results
-StreamBIM.findObjects(querySearch).then(function(response) {
-    console.log("getObjectInfoForSearch", response);
-    let query = { rules: querySearch.filter.rules };
+### Annotations / Custom Objects
+- **`createObject({ center: [x,y,z], name: string }): Promise<GUID>`** — Create a simple annotation object at a world coordinate.
 
-    StreamBIM.applyObjectSearch(query).then( (result) => {
-        StreamBIM.setSearchVisualizationMode('PERMANENT');
-    }).catch( function(error) {
-        console.log("Error applying object search", error);
-    });
+### UI State
+- **`setExpanded(bool: boolean): Promise<boolean>`** — Expand/collapse the embedded widget (if host UI supports it).
+- **`setShowExpandButton(bool: boolean): Promise<boolean>`** — Show/hide expand button.
+
+### Low‑level API
+- **`makeApiRequest({ url: string, body?: any, method?: 'GET'|'POST'|'PUT'|'DELETE', accept?: string, contentType?: string }): Promise<string>`** — Perform an authenticated request from inside the viewer context (helpful for IFC searches/exports). Returns the raw response body (often JSON text) so you can `JSON.parse` it.
+
+---
+
+## Examples
+
+### Color‑coding spaces with legends
+```js
+const data = { 'SpaceGuidA': '7d7d7d', 'SpaceGuidB': '4abb32', 'SpaceGuidC': 'b90c0c' };
+const legends = { 'Not started': '7d7d7d', 'On track': '4abb32', 'Over due': 'b90c0c' };
+await StreamBIM.colorCodeSpaces({ data, legends });
+await StreamBIM.zoomToSearchResult();
+```
+
+### Find & show objects in the same system
+```js
+const selected = await StreamBIM.getObjectInfo(guid);
+const systemGuid = selected.properties['System Global Id'][0];
+await StreamBIM.applyObjectSearch({ key: 'System Global Id', value: systemGuid, limit: 100 }, true);
+await StreamBIM.setSearchVisualizationMode('FADED');
+await StreamBIM.zoomToSearchResult();
+```
+
+### Quick screenshot & map tiles
+```js
+const screenshot = await StreamBIM.takeScreenshot();
+document.querySelector('#img').src = screenshot;
+const map = await StreamBIM.getMapImage({ width: 1024, height: 768, resolution: 5 });
+```
+
+### Using IFC Search + Export directly
+```js
+// 1) create search
+const res = await StreamBIM.makeApiRequest({
+  url: '/pgw/project-XXXX/api/v1/ifc-searches',
+  method: 'POST',
+  body: { rules: [[{ buildingId: '1000', propKey: '@kind', propValue: 'Space' }]] }
 });
+const { searchId } = JSON.parse(res);
+
+// 2) export result
+const fieldNames = btoa('GUID|Name|Long Name|Description');
+const json = await StreamBIM.makeApiRequest({
+  url: `/pgw/project-XXXX/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&fieldNames=${fieldNames}&page[limit]=1000&page[skip]=0`
+});
+const spaces = JSON.parse(json).data;
 ```
 
-### `getObjectInfoForSearch(query)`
-Filter the 3D scene to show only objects matching the filter. See `findObjects(query)` for filter options.
+---
 
-### `applyObjectSearch(filter)`
-Filter the 3D scene to show only objects matching the filter. See `findObjects(query)` for filter options.
+## Notes & Guarantees
+- All methods return a `Promise`. On error, the promise rejects with `{ code: string, detail?: any }`.
+- GUIDs are StreamBIM IFC GUIDs unless a method explicitly uses a floor ID.
+- Colors accept HEX strings only
 
-### `resetObjectSearch()`
 
-### `showAllObjects()`
-
-### `showGrids()`
-
-### `hideGrids()`
-
-### `getLayers()`
-Returns a list of layers with their visibility status in this form
-```javascript
-{
-  layername_1: true,
-  layername_2: true,
-  layername_3: false,
-  ...
-}
-```
-
-### `setLayers(layers)`
-Sets the visibility of the layers. Takes an object of the form
-```javascript
-{
-  layername_1: true,
-  layername_2: true,
-  layername_3: false,
-  ...
-}
-```
-
-### `getViewportState()`
-Returns a promise which is resolved with an object containing the entire viewport state, including camera position and rotation, hidden- and highlighted objects, hidden layers and clipping planes. 
-
-### `setViewportState(state)`
-Resets the viewport and applies the state, which should be on the same form as returned from `getViewportState()`: 
-```javascript
-{
-  cameraState: {
-    position: [x, y, z],
-    quaternion: [x, y, z, w]
-  },
-  hiddenObjects: [guid],
-  highlightedObjects: [guid],
-  hiddenLayers: [layerName],
-  clippingPlanes: [{}]
-}
-```
-
-### `takeScreenshot()`
-
-Returns a promise which is resolved with a dataUrl of the 3D screenshot.
-
-### `setShowExpandButton(bool)`
-
-Show or hide the expand/contract button in the widget panel's header.
-
-### `setExpanded(bool)`
-
-Set to TRUE to expand the widget into fullscreen mode or FALSE to contract the widget into side panel mode.
-
-## Errors
-All API calls return promises which, if an error occurs, are rejected with an object which has a `code` and a `detail` field. Code is one of the following: `invalid`, `notFound`, `unknown`, `unauthorized` and `notAllowed`. Detail can contain anything and should only be used for debugging purposes. 
-
-## Demo
-Please take a look at the [demo](/demo/index.html) widget for a complete widget implementation example. To see an example of how to run StreamBIM in embedded mode, see the [embedded demo](/demo_embedded/index.html). Notice the CSS rules to ensure that the content is scrollable on touch devices. 
-
-## Dependencies
-
-The library is using the excellent [Penpal](https://github.com/Aaronius/penpal) library for secure communication with iframes via postMessage
-
-## License
-
-MIT
