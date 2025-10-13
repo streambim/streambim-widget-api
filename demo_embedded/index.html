@@ -114,7 +114,7 @@
             </td></tr>
             <tr><td>
               <textarea id="stylesInput" placeholder="CSS"></textarea>
-              <button id="applyStylesBtn">Apply styles</button>
+              <button id="setStylesBtn">Apply styles</button>
             </td></tr>
             <tr><td>
               <textarea id="customObjectInput" placeholder='{"name": "Custom object", "center": [0.0, 0.0, 0.0]}'></textarea>
@@ -228,10 +228,19 @@
           StreamBIM.setSkyColor('white')
           StreamBIM.setNavigationMode(1)
         }
-      }).then( function () {
+      }).then( function (foo) {
+        console.log(foo)
         document.getElementById('connecting').style = 'display:none';
         document.getElementById('buttons').style = '';
         logEvent('Widget ready');
+
+        StreamBIM.resetObjectSearch().then( () => {
+          StreamBIM.applyObjectSearch({rules: [[{propKey: '@kind', propValue: 'Door', buildingId: '1000'}]]}).then( () =>{
+            StreamBIM.zoomToSearchResult()
+            StreamBIM.setSearchVisualizationMode('FADED')
+          })
+        })
+
       }).catch( function(error) {
         logEvent('Connect failed: ' + JSON.stringify(error));
       });
@@ -427,12 +436,12 @@
         });
       }
 
-      var applyStylesClicked = function () {
+      var setStylesClicked = function () {
         var styles = document.getElementById('stylesInput').value;
-        StreamBIM.applyStyles(styles).then( (result) => {
-          logEvent('applyStyles: ' + result);
+        StreamBIM.setStyles(styles).then( (result) => {
+          logEvent('setStyles: ' + result);
         }).catch( function(error) {
-          logError('applyStyles', error);
+          logError('setStyles', error);
         });
       }
 
@@ -810,7 +819,7 @@
       document.getElementById('showAllObjects').addEventListener("click", showAllObjectsClicked, false);
       document.getElementById('getViewportState').addEventListener("click", getViewportStateClicked, false);
       document.getElementById('setViewportState').addEventListener("click", setViewportStateClicked, false);
-      document.getElementById('applyStylesBtn').addEventListener("click", applyStylesClicked, false);
+      document.getElementById('setStylesBtn').addEventListener("click", setStylesClicked, false);
       document.getElementById('customObjectBtn').addEventListener("click", createObjectClicked, false);
       document.getElementById('colorCodeObjectsBtn').addEventListener("click", colorCodeObjectsClicked, false);
       document.getElementById('colorCodeSpacesBtn').addEventListener("click", colorCodeSpacesClicked, false);
