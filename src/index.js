@@ -1,4 +1,4 @@
-import { connectToParent, connectToChild } from 'penpal';
+import { WindowMessenger, connect } from 'penpal';
 
 /*!
  * StreamBIM widget API
@@ -16,35 +16,53 @@ import { connectToParent, connectToChild } from 'penpal';
   else root[name] = definition()
 }(window, 'StreamBIM', function () {
     return {
-      connect(methods = {}) {
-        this._connection = connectToParent({
+      connectToParent(parentWindow, methods = {}) {
+        const parent = parentWindow || window.parent;
+
+        const messenger = new WindowMessenger({
+          remoteWindow: parent,
+          allowedOrigins: [parent.origin, new URL(document.referrer).origin]
+        });
+
+        this._connection = connect({
+          messenger: messenger,
           methods: methods
         });
 
         return this._connection.promise.then( (connection) => {
-          this._connection = connection;
-          Object.keys(connection).forEach( (key) => {
-            this[key] = (params) => {
-              console.assert(this._connection, "StreamBIM parent frame not found");
-              return this._connection[key](params);
-            }
-          })
+          this.API = connection;
         });
       },
+
       connectToChild(iframe, methods = {}) {
-        this._connection = connectToChild({
-          iframe,
+        const messenger = new WindowMessenger({
+          remoteWindow: iframe.contentWindow,
+          allowedOrigins: [new URL(iframe.src).origin]
+        });
+
+        this._connection = connect({
+          messenger: messenger,
           methods: methods
         });
 
         return this._connection.promise.then( (connection) => {
-          this._connection = connection;
-          Object.keys(connection).forEach( (key) => {
-            this[key] = (params) => {
-              console.assert(this._connection, "StreamBIM child frame not found");
-              return this._connection[key](params);
-            }
-          })
+          this.API = connection;
+        });
+      },
+
+      connectToWindow(childWindow, childWindowUrl, methods = {}) {
+        const messenger = new WindowMessenger({
+          remoteWindow: childWindow,
+          allowedOrigins: [new URL(childWindowUrl).origin]
+        });
+
+        this._connection = connect({
+          messenger: messenger,
+          methods: methods
+        });
+
+        return this._connection.promise.then((connection) => {
+          this.API = connection;
         });
       }
     }

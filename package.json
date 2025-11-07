@@ -1,6 +1,6 @@
 {
   "name": "streambim-widget-api",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "A JavaScript library for interacting with StreamBIM from within an embedded widget, and when using StreamBIM in embedded mode.",
   "main": "dist/streambim-widget-api.min.js",
   "scripts": {
@@ -26,7 +26,7 @@
   "homepage": "https://github.com/streambim/streambim-widget-api#readme",
   "devDependencies": {
     "jshint": "^2.10.3",
-    "penpal": "5.2.1",
+    "penpal": "^7.0.4",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1"
   }
