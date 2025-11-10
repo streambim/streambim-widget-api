@@ -158,8 +158,8 @@
         },
         beforeInit: async function() {
           // const token = ''
-          // StreamBIM.setAuthToken(token)
-          StreamBIM.setStyles(`
+          // StreamBIM.API.setAuthToken(token)
+          StreamBIM.API.setStyles(`
             .message-container {
               background-color: white;
             }
@@ -170,12 +170,12 @@
               color: black;
             }
           `)
-          StreamBIM.setSkyColor('white');
-          StreamBIM.setNavigationMode(1);
+          StreamBIM.API.setSkyColor('white');
+          StreamBIM.API.setNavigationMode(1);
           document.getElementById('connecting').style = 'display:none';
           document.getElementById('buttons').style = '';
 
-          StreamBIM.gotoSpace('029$nqXNzDP9018VbDWlS$');
+          StreamBIM.API.gotoSpace('029$nqXNzDP9018VbDWlS$');
           
           const data = {
             '01WdkzDc55oA5oPFwqUbmR': '7d7d7d',
@@ -188,10 +188,10 @@
             'Over due':    'b90c0c'
           }
 
-          // StreamBIM.colorCodeSpacesWithLegends({data, legends});
-          StreamBIM.hideGrids();
-          // StreamBIM.toggleHideNoResultsFloors(true);
-          // StreamBIM.getLayers().then( (layers) => {
+          // StreamBIM.API.colorCodeSpacesWithLegends({data, legends});
+          StreamBIM.API.hideGrids();
+          // StreamBIM.API.toggleHideNoResultsFloors(true);
+          // StreamBIM.API.getLayers().then( (layers) => {
           //   Object.keys(layers).forEach( (layer) => {
           //     patternsForHiddenLayers.forEach( (pattern) => {
           //       if (layer.indexOf(pattern) == 0) {
@@ -199,7 +199,7 @@
           //       }
           //     })
           //   })
-          //   StreamBIM.setLayers(layers);
+          //   StreamBIM.API.setLayers(layers);
           // });
         }
       }).then( function () {
@@ -216,7 +216,7 @@
       // in addition to the floor of the space, but this is probably not needed.
       async function getSpaces() {
         try {
-          const res = await StreamBIM.makeApiRequest({
+          const res = await StreamBIM.API.makeApiRequest({
             url: '/pgw/project-3464/api/v1/ifc-searches',
             body: {
               rules: [[{ buildingId: "1000", propKey: "@kind", propValue: "Space" }]]
@@ -229,7 +229,7 @@
             'GUID|Name|Long Name|Description|Space Global Id|Location~Floor by position'
           );
 
-          const res2 = await StreamBIM.makeApiRequest({
+          const res2 = await StreamBIM.API.makeApiRequest({
             url: `/pgw/project-3464/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
           });
 
@@ -245,7 +245,7 @@
       // Get JSON with basic of the systems in the model
       async function getSystems() {
         try {
-          const res = await StreamBIM.makeApiRequest({
+          const res = await StreamBIM.API.makeApiRequest({
             url: '/pgw/project-3464/api/v1/ifc-searches',
             body: {
               rules: [[{ buildingId: "1000", propKey: "@kind", propValue: "System" }]]
@@ -256,7 +256,7 @@
           const { searchId } = JSON.parse(res);
           const fieldNamesEncoded = b64EncodeUnicode('GUID|Name');
 
-          const res2 = await StreamBIM.makeApiRequest({
+          const res2 = await StreamBIM.API.makeApiRequest({
             url: `/pgw/project-3464/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
           });
           const systems = JSON.parse(res2).data;
@@ -283,7 +283,7 @@
           ]));
 
           // and perform the search
-          const res = await StreamBIM.makeApiRequest({
+          const res = await StreamBIM.API.makeApiRequest({
             url: '/pgw/project-3464/api/v1/ifc-searches',
             body: { rules },
             method: 'POST'
@@ -301,7 +301,7 @@
             `${psetNameForTFM}~${propKeyForTFM}`
           ])
           
-          const res2 = await StreamBIM.makeApiRequest({
+          const res2 = await StreamBIM.API.makeApiRequest({
             url: `/pgw/project-3464/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
           });
 
@@ -320,7 +320,7 @@
 
       // Example usage of colorCodeSpaces
       async function colorCodeSpaces(){
-        await StreamBIM.resetObjectSearch();
+        await StreamBIM.API.resetObjectSearch();
         const data = {
           '01WdkzDc55oA5oPFwqUbmR': '7d7d7d',
           '028y6nXsvDv8AOsMQjaEZR': '4abb32',
@@ -332,13 +332,13 @@
           'Over due':    'b90c0c'
         }
 
-        await StreamBIM.colorCodeSpacesWithLegends({data, legends})
-        StreamBIM.zoomToSearchResult();
+        await StreamBIM.API.colorCodeSpacesWithLegends({data, legends})
+        StreamBIM.API.zoomToSearchResult();
       }
 
       // Example usage of colorCodeObjects
       async function colorCodeObjects(){
-        await StreamBIM.resetObjectSearch();
+        await StreamBIM.API.resetObjectSearch();
         const data = {
           '1uR2u13vnCeO9feOa0NW1P': '7d7d7d',
           '3tpWS5jfPEmf7g9kFUlExZ': '4abb32',
@@ -350,15 +350,15 @@
           'Over due':    'b90c0c'
         }
 
-        return StreamBIM.colorCodeObjectsWithLegends({data, legends}).then( () => {
-          StreamBIM.zoomToSearchResult();
+        return StreamBIM.API.colorCodeObjectsWithLegends({data, legends}).then( () => {
+          StreamBIM.API.zoomToSearchResult();
         });
       }
 
       async function highlightSystem(){
-        await StreamBIM.resetObjectSearch();
-        await StreamBIM.highlightSystem('08CWGl08rCWBFXLXyoG6Rs');
-        StreamBIM.zoomToSearchResult();
+        await StreamBIM.API.resetObjectSearch();
+        await StreamBIM.API.highlightSystem('08CWGl08rCWBFXLXyoG6Rs');
+        StreamBIM.API.zoomToSearchResult();
       }
 
 
@@ -406,7 +406,7 @@
             data[spaceGuid] = color;
           })
 
-          StreamBIM.colorCodeSpacesWithLegends({data, legends});
+          StreamBIM.API.colorCodeSpacesWithLegends({data, legends});
 
         } catch (error) {
           logError('error', error);
@@ -417,32 +417,32 @@
       async function showAllFloors(){
         showingAllFloors = !showingAllFloors;
 
-        await StreamBIM.setViewLayout(showingAllFloors ? 'ALL_FLOORS' : 'SMALL_2D');
-        StreamBIM.zoomToSearchResult()
+        await StreamBIM.API.setViewLayout(showingAllFloors ? 'ALL_FLOORS' : 'SMALL_2D');
+        StreamBIM.API.zoomToSearchResult()
       }
 
       // Example of going to a single space
       async function gotoSpace(){
-        await StreamBIM.resetObjectSearch();
-        StreamBIM.gotoSpace('2ITwlBwcX7Fvrg_Ys8WaAt');
+        await StreamBIM.API.resetObjectSearch();
+        StreamBIM.API.gotoSpace('2ITwlBwcX7Fvrg_Ys8WaAt');
       }
 
       async function showNiceOverviewOfFloor() {
-        const floorList = await StreamBIM.getFloors();
+        const floorList = await StreamBIM.API.getFloors();
         const thirdFloorFromBelow = floorList.sort(function(a, b, ) {
           return a.height - b.height;
         })[3];
-        await StreamBIM.clipToFloor(thirdFloorFromBelow.id);
-        await StreamBIM.applyObjectSearch({
+        await StreamBIM.API.clipToFloor(thirdFloorFromBelow.id);
+        await StreamBIM.API.applyObjectSearch({
           key: '@kind',
           value: 'Space'
         })
-        await StreamBIM.colorCodeByProperty({
+        await StreamBIM.API.colorCodeByProperty({
           pset: 'BaseQuantities', 
           propertyKey: 'NetFloorArea'
         })
-        StreamBIM.setSearchVisualizationMode('ORIGINAL');
-        await StreamBIM.zoomToSearchResult();
+        StreamBIM.API.setSearchVisualizationMode('ORIGINAL');
+        await StreamBIM.API.zoomToSearchResult();
       }
 
 

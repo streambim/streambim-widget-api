@@ -172,14 +172,14 @@
 
       const iframe = document.getElementById('streambim_target');
       // var projectId = prompt('Project ID')
-      // iframe.src = 'https://dev.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+      // iframe.src = 'https://dev.StreamBIM.API.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
 
       iframe.src = 'http://localhost:4201/#/viewer?projectId=1113&embedded=true'
 
       StreamBIM.connectToChild(iframe, {
         pickedObject: function (result) {
           if (window.createObjectMode) {
-            StreamBIM.createObject({
+            StreamBIM.API.createObject({
               center: result.point, 
               name: 'Test object'
             }).then( function(guid) {
@@ -189,7 +189,7 @@
               createdObjects.forEach(function(guid) {
                 colorCoding[guid] = 'red';
               });
-              StreamBIM.colorCodeObjects(colorCoding).then( (result) => {
+              StreamBIM.API.colorCodeObjects(colorCoding).then( (result) => {
                 logEvent('colorCodeObjects: ' + result);
               }).catch( function(error) {
                 logError('colorCodeObjects', error);
@@ -223,10 +223,10 @@
           logEvent('Camera changed: ' + JSON.stringify(cameraState));
         },
         beforeInit: function() {
-          StreamBIM.setAuthToken('XXXX')
-          StreamBIM.setStyles('.message-container {background-color: white;}')
-          StreamBIM.setSkyColor('white')
-          StreamBIM.setNavigationMode(1)
+          // StreamBIM.API.setAuthToken('XXXX')
+          StreamBIM.API.setStyles('.message-container {background-color: white;}')
+          StreamBIM.API.setSkyColor('white')
+          StreamBIM.API.setNavigationMode(1)
         }
       }).then( function (foo) {
         console.log(foo)
@@ -234,10 +234,10 @@
         document.getElementById('buttons').style = '';
         logEvent('Widget ready');
 
-        StreamBIM.resetObjectSearch().then( () => {
-          StreamBIM.applyObjectSearch({rules: [[{propKey: '@kind', propValue: 'Door', buildingId: '1000'}]]}).then( () =>{
-            StreamBIM.zoomToSearchResult()
-            StreamBIM.setSearchVisualizationMode('FADED')
+        StreamBIM.API.resetObjectSearch().then( () => {
+          StreamBIM.API.applyObjectSearch({rules: [[{propKey: '@kind', propValue: 'Door', buildingId: '1000'}]]}).then( () =>{
+            StreamBIM.API.zoomToSearchResult()
+            StreamBIM.API.setSearchVisualizationMode('FADED')
           })
         })
 
@@ -246,7 +246,7 @@
       });
 
       var getProjectIdClicked = function () {
-        StreamBIM.getProjectId().then( (result) => {
+        StreamBIM.API.getProjectId().then( (result) => {
           logEvent('Got project ID: ' + result);
         }).catch( function(error) {
           logError('getProjectId', error);
@@ -254,7 +254,7 @@
       }
 
       var getUserEmailClicked = function () {
-        StreamBIM.getUserEmail().then( (result) => {
+        StreamBIM.API.getUserEmail().then( (result) => {
           logEvent('Got user email: ' + result);
         }).catch( function(error) {
           logError('getUserEmail failed: ', error);
@@ -262,7 +262,7 @@
       }
 
       var getFloorsClicked = function () {
-        StreamBIM.getFloors().then( (result) => {
+        StreamBIM.API.getFloors().then( (result) => {
           logEvent('Got floors: ' + result.map(function(floor){return `${floor.name} (height: ${floor.height.toFixed(2)} - ID: ${floor.id})`}).join(', '));
         }).catch( function(error) {
           logError('getFloors', error);
@@ -270,7 +270,7 @@
       }
 
       var getCameraStateClicked = function () {
-        StreamBIM.getCameraState().then( (result) => {
+        StreamBIM.API.getCameraState().then( (result) => {
           logEvent('Got camera state: ' + JSON.stringify(result));
           window.lastCameraState = result;
         }).catch( function(error) {
@@ -279,7 +279,7 @@
       }
 
       var setLastCameraStateClicked = function () {
-        StreamBIM.setCameraState(window.lastCameraState).then( (result) => {
+        StreamBIM.API.setCameraState(window.lastCameraState).then( (result) => {
           logEvent('setCameraState: ' + result);
         }).catch( function(error) {
           logError('setCameraState', error);
@@ -287,7 +287,7 @@
       }
 
       var setLastCameraPositionClicked = function () {
-        StreamBIM.setCameraPosition(window.lastCameraState.position).then( (result) => {
+        StreamBIM.API.setCameraPosition(window.lastCameraState.position).then( (result) => {
           logEvent('setCameraPosition: ' + result);
         }).catch( function(error) {
           logError('setCameraPosition', error);
@@ -295,7 +295,7 @@
       }
 
       var setNavigationMode0Clicked = function () {
-        StreamBIM.setNavigationMode(0).then( (result) => {
+        StreamBIM.API.setNavigationMode(0).then( (result) => {
           logEvent('setNavigationMode: ' + result);
         }).catch( function(error) {
           logError('setNavigationMode', error);
@@ -303,7 +303,7 @@
       }
 
       var setNavigationMode1Clicked = function () {
-        StreamBIM.setNavigationMode(1).then( (result) => {
+        StreamBIM.API.setNavigationMode(1).then( (result) => {
           logEvent('setNavigationMode: ' + result);
         }).catch( function(error) {
           logError('setNavigationMode', error);
@@ -311,7 +311,7 @@
       }
 
       var getSpaceClicked = function () {
-        StreamBIM.getSpaces().then( (result) => {
+        StreamBIM.API.getSpaces().then( (result) => {
           if (result.length > 1) {
             logEvent('Got spaces: ' + result.join(', '));
           } else if (result.length == 1) {
@@ -328,7 +328,7 @@
       var getObjectInfoClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (result) => {
+          StreamBIM.API.getObjectInfo(guid).then( (result) => {
             logEvent('Got object info: ' + JSON.stringify(result));
           }).catch( function(error) {
             logError('getObjectInfo', error);
@@ -340,7 +340,7 @@
 
       var gotoSpaceClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.gotoSpace(guid).then( (result) => {
+        StreamBIM.API.gotoSpace(guid).then( (result) => {
           logEvent('gotoSpace: ' + result);
         }).catch( function(error) {
           logError('gotoSpace', error);
@@ -349,7 +349,7 @@
 
       var gotoFloorClicked = function () {
         var floorId = document.getElementById('guidInput').value;
-        StreamBIM.gotoFloor(floorId).then( (result) => {
+        StreamBIM.API.gotoFloor(floorId).then( (result) => {
           logEvent('gotoFloor: ' + result);
         }).catch( function(error) {
           logError('gotoFloor', error);
@@ -358,7 +358,7 @@
 
       var highlightObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.highlightObject(guid).then( (result) => {
+        StreamBIM.API.highlightObject(guid).then( (result) => {
           logEvent('highlightObject: ' + result);
         }).catch( function(error) {
           logError('highlightObject', error);
@@ -367,7 +367,7 @@
 
       var deHighlightObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.deHighlightObject(guid).then( (result) => {
+        StreamBIM.API.deHighlightObject(guid).then( (result) => {
           logEvent('deHighlightObject object: ' + result);
         }).catch( function(error) {
           logError('deHighlightObject', error);
@@ -375,7 +375,7 @@
       }
 
       var deHighlightAllObjectsClicked = function () {
-        StreamBIM.deHighlightAllObjects().then( (result) => {
+        StreamBIM.API.deHighlightAllObjects().then( (result) => {
           logEvent('deHighlightAllObjects: ' + result);
         }).catch( function(error) {
           logError('deHighlightAllObjects', error);
@@ -384,7 +384,7 @@
 
       var hideObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.hideObject(guid).then( (result) => {
+        StreamBIM.API.hideObject(guid).then( (result) => {
           logEvent('hideObject: ' + result);
         }).catch( function(error) {
           logError('hideObject', error);
@@ -393,7 +393,7 @@
 
       var showObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.showObject(guid).then( (result) => {
+        StreamBIM.API.showObject(guid).then( (result) => {
           logEvent('showObject: ' + result);
         }).catch( function(error) {
           logError('showObject', error);
@@ -402,7 +402,7 @@
 
       var gotoObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.gotoObject(guid).then( (result) => {
+        StreamBIM.API.gotoObject(guid).then( (result) => {
           logEvent('gotoObject: ' + result);
         }).catch( function(error) {
           logError('gotoObject', error);
@@ -410,7 +410,7 @@
       }
 
       var showAllObjectsClicked = function () {
-        StreamBIM.showAllObjects().then( (result) => {
+        StreamBIM.API.showAllObjects().then( (result) => {
           logEvent('showAllObjects: ' + result);
         }).catch( function(error) {
           logError('showAllObjects', error);
@@ -418,7 +418,7 @@
       }
 
       var getViewportStateClicked = function () {
-        StreamBIM.getViewportState().then( (result) => {
+        StreamBIM.API.getViewportState().then( (result) => {
           var stringifiedState = JSON.stringify(result);
           logEvent('Got viewport state: ' + stringifiedState);
           document.getElementById('stateInput').value = stringifiedState;
@@ -429,7 +429,7 @@
 
       var setViewportStateClicked = function () {
         var state = JSON.parse(document.getElementById('stateInput').value);
-        StreamBIM.setViewportState(state).then( (result) => {
+        StreamBIM.API.setViewportState(state).then( (result) => {
           logEvent('setViewportState: ' + result);
         }).catch( function(error) {
           logError('setViewportState', error);
@@ -438,7 +438,7 @@
 
       var setStylesClicked = function () {
         var styles = document.getElementById('stylesInput').value;
-        StreamBIM.setStyles(styles).then( (result) => {
+        StreamBIM.API.setStyles(styles).then( (result) => {
           logEvent('setStyles: ' + result);
         }).catch( function(error) {
           logError('setStyles', error);
@@ -458,7 +458,7 @@
             '362dngm4r7CQ3PvZ2b5Y$e': 'green'
           }
         }
-        StreamBIM.colorCodeObjects(colorCoding).then( (result) => {
+        StreamBIM.API.colorCodeObjects(colorCoding).then( (result) => {
           logEvent('colorCodeObjects: ' + result);
         }).catch( function(error) {
           logError('colorCodeObjects', error);
@@ -475,7 +475,7 @@
             '3PB1onecrDh9eyOs0PIUei': 'red'
           }
         }
-        StreamBIM.colorCodeSpaces(colorCoding).then( (result) => {
+        StreamBIM.API.colorCodeSpaces(colorCoding).then( (result) => {
           logEvent('colorCodeSpaces: ' + result);
         }).catch( function(error) {
           logError('colorCodeSpaces', error);
@@ -490,7 +490,7 @@
         } else {
           objectInfo = { name: 'Custom object', center: [0.0, 0.0, 0.0] }
         }
-        StreamBIM.createObject(objectInfo).then( (result) => {
+        StreamBIM.API.createObject(objectInfo).then( (result) => {
           logEvent('Object created: ' + result);
         }).catch( function(error) {
           logError('create object error: ', error);
@@ -498,7 +498,7 @@
       }
 
       var getLayersClicked = function () {
-        StreamBIM.getLayers().then( (result) => {
+        StreamBIM.API.getLayers().then( (result) => {
           logEvent('Layers: ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('getLayers', error);
@@ -517,7 +517,7 @@
             "HAVNEPARKENFK1RIV39202301231350":false
           }
         }
-        StreamBIM.setLayers(layers).then( (result) => {
+        StreamBIM.API.setLayers(layers).then( (result) => {
           logEvent('setLayers: ' + result);
         }).catch( function(error) {
           logError('setLayers', error);
@@ -525,7 +525,7 @@
       }
 
       var showGridsClicked = function () {
-        StreamBIM.showGrids().then( (result) => {
+        StreamBIM.API.showGrids().then( (result) => {
           logEvent('Show grids: ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('showGrids', error);
@@ -533,7 +533,7 @@
       }
 
       var hideGridsClicked = function () {
-        StreamBIM.hideGrids().then( (result) => {
+        StreamBIM.API.hideGrids().then( (result) => {
           logEvent('Hide grids: ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('hideGrids', error);
@@ -542,7 +542,7 @@
 
       var quickSearchClicked = function () {
         var freetext = document.getElementById('quickSearchInput').value;
-        StreamBIM.quickSearch(freetext).then( (result) => {
+        StreamBIM.API.quickSearch(freetext).then( (result) => {
           logEvent('quickSearch: ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('quickSearch', error);
@@ -551,7 +551,7 @@
 
       var propertyValuesClicked = function () {
         var property = document.getElementById('propertyValuesInput').value;
-        StreamBIM.valuesForObjectProperty(property).then( (result) => {
+        StreamBIM.API.valuesForObjectProperty(property).then( (result) => {
           logEvent('propertyValues: ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('propertyValues', error);
@@ -559,7 +559,7 @@
       }
 
       var takeScreenshotClicked = function () {
-        StreamBIM.takeScreenshot().then( (result) => {
+        StreamBIM.API.takeScreenshot().then( (result) => {
           logEvent('Got screenshot');
           document.getElementById('screenshotImg').src = result;
         }).catch( function(error) {
@@ -568,7 +568,7 @@
       }
 
       var getOverviewMapImageClicked = function () {
-        StreamBIM.getMapImage({width: 1024, height: 768, resolution: 5}).then( (result) => {
+        StreamBIM.API.getMapImage({width: 1024, height: 768, resolution: 5}).then( (result) => {
           logEvent('Got map image');
           document.getElementById('screenshotImg').src = result;
         }).catch( function(error) {
@@ -577,7 +577,7 @@
       }
 
       var getDetailMapImageClicked = function () {
-        StreamBIM.getMapImage({width: 1024, height: 768, resolution: 1}).then( (result) => {
+        StreamBIM.API.getMapImage({width: 1024, height: 768, resolution: 1}).then( (result) => {
           logEvent('Got map image');
           document.getElementById('screenshotImg').src = result;
         }).catch( function(error) {
@@ -587,7 +587,7 @@
 
       var changeSkyColorClicked = function () {
         let color = `rgb(${(255*Math.random()).toFixed()},${(255*Math.random()).toFixed()},${(255*Math.random()).toFixed()})`
-        StreamBIM.setSkyColor(color).then( (result) => {
+        StreamBIM.API.setSkyColor(color).then( (result) => {
           logEvent('setSkyColor');
         }).catch( function(error) {
           logError('setSkyColor', error);
@@ -597,7 +597,7 @@
       var findObjectsOfSameTypeClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var typeGuid = selectedObject.properties['Type Object Global Id']
             if (typeGuid) {
               var query = {
@@ -605,7 +605,7 @@
                 value: typeGuid,
                 limit: 100
               }
-              StreamBIM.findObjects(query).then( (result) => {
+              StreamBIM.API.findObjects(query).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -624,7 +624,7 @@
       var findObjectsInSameSystemClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var systemGuids = selectedObject.properties['System Global Id']
             if (systemGuids && systemGuids.length) {
               var query = {
@@ -632,7 +632,7 @@
                 value: systemGuids[0],
                 limit: 100
               }
-              StreamBIM.findObjects(query).then( (result) => {
+              StreamBIM.API.findObjects(query).then( (result) => {
                 logEvent('Objects in same system: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -651,7 +651,7 @@
       var showObjectsOfSameTypeClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var typeGuid = selectedObject.properties['Type Object Global Id'].split('~').pop()
             if (typeGuid) {
               var query = {
@@ -659,7 +659,7 @@
                 value: typeGuid,
                 limit: 100
               }
-              StreamBIM.applyObjectSearch(query, true).then( (result) => {
+              StreamBIM.API.applyObjectSearch(query, true).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -678,7 +678,7 @@
       var showObjectsInSameSystemClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var systemGuids = selectedObject.properties['System Global Id']
             if (systemGuids && systemGuids.length) {
               var query = {
@@ -686,7 +686,7 @@
                 value: systemGuids[0],
                 limit: 100
               }
-              StreamBIM.applyObjectSearch(query, true).then( (result) => {
+              StreamBIM.API.applyObjectSearch(query, true).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -717,7 +717,7 @@
             descending: false
           }
         }
-        StreamBIM.getObjectInfoForSearch(query).then(function(result) {
+        StreamBIM.API.getObjectInfoForSearch(query).then(function(result) {
           logEvent('Info for all doors: \n   - ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('getObjectInfoForAllDoorsClicked', error);
@@ -744,7 +744,7 @@
             descending: false
           }
         }
-        StreamBIM.getObjectInfoForSearch(query).then(function(result) {
+        StreamBIM.API.getObjectInfoForSearch(query).then(function(result) {
           logEvent('getObjectInfoForObjectsWithHeightOver2000: \n   - ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('getObjectInfoForObjectsWithHeightOver2000', error);
@@ -752,7 +752,7 @@
       }
 
       var zoomToSearchClicked = function () {
-        StreamBIM.zoomToSearchResult().then( () => {
+        StreamBIM.API.zoomToSearchResult().then( () => {
           logEvent('zoomToSearch');
         }).catch( function(error) {
           logError('zoomToSearch', error);
@@ -763,7 +763,7 @@
 
       var searchVisModeClicked = function () {
         let mode = ['HIDDEN', 'FADED', 'ORIGINAL'][visMode%3];
-        StreamBIM.setSearchVisualizationMode(mode).then( () => {
+        StreamBIM.API.setSearchVisualizationMode(mode).then( () => {
           logEvent('setSearchVisualizationMode');
           visMode++;
         }).catch( function(error) {
@@ -773,7 +773,7 @@
 
 
       var resetObjectSearchClicked = function () {
-        StreamBIM.resetObjectSearch().then( () => {
+        StreamBIM.API.resetObjectSearch().then( () => {
           logEvent('Object search reset');
         }).catch( function(error) {
           logError('resetObjectSearch', error);
@@ -783,7 +783,7 @@
       var getAnnotatedFloorplanClicked = function () {
         let point = window.pickPoint || window.cameraState.position;
         if (point) {
-          StreamBIM.getAnnotatedFloorplan(point).then( (res) => {
+          StreamBIM.API.getAnnotatedFloorplan(point).then( (res) => {
             let anchor = document.createElement("a");
             anchor.href = res
             anchor.download = 'Document.pdf'
