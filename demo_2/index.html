@@ -53,8 +53,7 @@
   <body>
     <div class="main">
       <div class="content">
-        <h1>StreamBIM window demo</h1>
-        <button id="openWindow">Open window</button>
+        <h1>StreamBIM embedded demo</h1>
         <div id="events"></div>
         <div id="connecting">
           Waiting for connection...
@@ -62,13 +61,21 @@
         <div id="buttons" style="display:none;">
           <table>
             <tr><td>
-              <button id="getBuildingId">Get building ID</button>
               <button id="getSpaces">Get spaces</button>
               <button id="getSystems">Get systems</button>
+              <button id="getObjectsWithTfmCodes">Get objects with TFM codes</button>
+              <button id="gotoSpace">Goto space</button>
+              <button id="colorCodeSpaces">Color code spaces</button>
+              <button id="showNiceOverviewOfFloor">Show 3rd floor</button>
+              <button id="colorCodeObjects">Color code objects</button>
+              <button id="highlightSystem">Highlight system</button>
+              <button id="colorCodeSpacesByVentSystem">Color code spaces by ventilation system</button>
+              <button id="showAllFloors">Show all floors</button>
             </td></tr>
           </table>
         </div>
       </div>
+      <iframe id="streambim_target"></iframe>
     </div>
     <script src="../dist/streambim-widget-api.min.js"></script>
     <script>
@@ -122,69 +129,85 @@
 
       // Let's go
 
-      function openWindow() {
-        const windowUrl = 'http://localhost:4201/#/viewer?buildingId=1000&projectId=1407&embedded=true'
-        const childWindow = window.open(windowUrl, 'StreamBIMWindow', 'width=1200,height=800');
+      const iframe = document.getElementById('streambim_target');
+      iframe.src = 'http://localhost:4201/#/viewer?buildingId=1000&projectId=18471&embedded=true'
 
-        StreamBIM.connectToWindow(childWindow, windowUrl, {
-          pickedObject: function (result) {
-            if (result.point) {
-              logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
-            } else {
-              logEvent('Clicked object "' + result.guid)
-            }
-            document.getElementById('guidInput').value = result.guid;
-            window.pickPoint = result.point;
-          },
-          spacesChanged: function (guids) {
-            if (guids.length) {
-              logEvent('Entered space ' + guids[0]);
-            } else {
-              logEvent('Left building');
-            }
-          },
-          floorChanged: function (floorId) {
-            logEvent('Entered floor ' + floorId);
-          },
-          cameraChanged: function (cameraState) {
-            window.cameraState = cameraState;
-            logEvent('Camera changed: ' + JSON.stringify(cameraState));
-          },
-          beforeInit: async function() {
-            // const token = ''
-            // StreamBIM.API.setAuthToken(token)
-            StreamBIM.API.setStyles(`
-              .message-container {
-                background-color: white;
-              }
-              #moreBtn, .map-more-buttons, #mapFloorplanSelector, #measure-toggle-container, .btn-custom-views-control {
-                display: none;
-              }
-              .color-coding-label-container {
-                color: black;
-              }
-            `)
-            StreamBIM.API.setSkyColor('white');
-            StreamBIM.API.setNavigationMode(1);
-            document.getElementById('connecting').style = 'display:none';
-            document.getElementById('buttons').style = '';
+      StreamBIM.connectToChild(iframe, {
+        pickedObject: function (result) {
+          if (result.point) {
+            logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
+          } else {
+            logEvent('Clicked object "' + result.guid)
           }
-        }).then( function () {
-          logEvent('Widget ready');
-        }).catch( function(error) {
-          logEvent('Connect failed: ' + JSON.stringify(error));
-        });
-      }
+          document.getElementById('guidInput').value = result.guid;
+          window.pickPoint = result.point;
+        },
+        spacesChanged: function (guids) {
+          if (guids.length) {
+            logEvent('Entered space ' + guids[0]);
+          } else {
+            logEvent('Left building');
+          }
+        },
+        floorChanged: function (floorId) {
+          logEvent('Entered floor ' + floorId);
+        },
+        cameraChanged: function (cameraState) {
+          window.cameraState = cameraState;
+          logEvent('Camera changed: ' + JSON.stringify(cameraState));
+        },
+        beforeInit: async function() {
+          // const token = ''
+          // StreamBIM.API.setAuthToken(token)
+          StreamBIM.API.setStyles(`
+            .message-container {
+              background-color: white;
+            }
+            #moreBtn, .map-more-buttons, #mapFloorplanSelector, #measure-toggle-container, .btn-custom-views-control {
+              display: none;
+            }
+            .color-coding-label-container {
+              color: black;
+            }
+          `)
+          StreamBIM.API.setSkyColor('white');
+          StreamBIM.API.setNavigationMode(1);
+          document.getElementById('connecting').style = 'display:none';
+          document.getElementById('buttons').style = '';
 
-      async function getBuildingId() {
-        try {
-          const buildingId = await StreamBIM.API.getBuildingId();
-          logEvent('Got building ID: ' + buildingId);
-          return buildingId;
-        } catch (error) {
-          logError('getBuildingId', error);
+          StreamBIM.API.gotoSpace('029$nqXNzDP9018VbDWlS$');
+          
+          const data = {
+            '01WdkzDc55oA5oPFwqUbmR': '7d7d7d',
+            '028y6nXsvDv8AOsMQjaEZR': '4abb32',
+            '029$nqXNzDP9018VbDWlS$': 'b90c0c'
+          }
+          const legends = {
+            'Not started': '7d7d7d',
+            'On track':    '4abb32',
+            'Over due':    'b90c0c'
+          }
+
+          // StreamBIM.API.colorCodeSpacesWithLegends({data, legends});
+          StreamBIM.API.hideGrids();
+          // StreamBIM.API.toggleHideNoResultsFloors(true);
+          // StreamBIM.API.getLayers().then( (layers) => {
+          //   Object.keys(layers).forEach( (layer) => {
+          //     patternsForHiddenLayers.forEach( (pattern) => {
+          //       if (layer.indexOf(pattern) == 0) {
+          //         layers[layer] = false;
+          //       }
+          //     })
+          //   })
+          //   StreamBIM.API.setLayers(layers);
+          // });
         }
-      }
+      }).then( function () {
+        logEvent('Widget ready');
+
+      }).catch( function(error) {
+        logEvent('Connect failed: ' + JSON.stringify(error));
+      });
 
       // Get JSON with basic info for all spaces in the model
       // Main purpose of this is to get a mapping from Name to GUID,
@@ -193,9 +216,8 @@
       // in addition to the floor of the space, but this is probably not needed.
       async function getSpaces() {
         try {
-          console.log('Getting spaces...', StreamBIM);
           const res = await StreamBIM.API.makeApiRequest({
-            url: '/pgw/project-1407/api/v1/ifc-searches',
+            url: '/pgw/project-3464/api/v1/ifc-searches',
             body: {
               rules: [[{ buildingId: "1000", propKey: "@kind", propValue: "Space" }]]
             },
@@ -208,7 +230,7 @@
           );
 
           const res2 = await StreamBIM.API.makeApiRequest({
-            url: `/pgw/project-1407/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
+            url: `/pgw/project-3464/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
           });
 
           spaces = JSON.parse(res2).data;
@@ -224,7 +246,7 @@
       async function getSystems() {
         try {
           const res = await StreamBIM.API.makeApiRequest({
-            url: '/pgw/project-1407/api/v1/ifc-searches',
+            url: '/pgw/project-3464/api/v1/ifc-searches',
             body: {
               rules: [[{ buildingId: "1000", propKey: "@kind", propValue: "System" }]]
             },
@@ -235,7 +257,7 @@
           const fieldNamesEncoded = b64EncodeUnicode('GUID|Name');
 
           const res2 = await StreamBIM.API.makeApiRequest({
-            url: `/pgw/project-1407/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
+            url: `/pgw/project-3464/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
           });
           const systems = JSON.parse(res2).data;
           logEvent('Got res: ' + systems.length);
@@ -245,10 +267,195 @@
         }
       }
 
-      document.getElementById('openWindow').addEventListener("click", openWindow, false);
-      document.getElementById('getBuildingId').addEventListener("click", getBuildingId, false);
+      // Get basic info for objects which has one of the passed in
+      // TFM codes
+      async function getObjectsWithTfmCodes(tfmCodes = ["KK"]) {
+        try {
+          // First we define the search rules to find the components
+          const rules = tfmCodes.map(code => ([
+            {
+              buildingId: "1000",
+              operator: "startsWith",
+              propKey: propKeyForTFM,
+              propValue: code,
+              psetName: psetNameForTFM
+            }
+          ]));
+
+          // and perform the search
+          const res = await StreamBIM.API.makeApiRequest({
+            url: '/pgw/project-3464/api/v1/ifc-searches',
+            body: { rules },
+            method: 'POST'
+          });
+
+          // We use the searchId to export the JSON data for the search result
+          const { searchId } = JSON.parse(res);
+
+          // We define which field names that are interesting for us
+          const fieldNamesEncoded = encodeFieldNames([
+            'GUID',
+            'Name',
+            'System Global Id',
+            'Space Global Id',
+            `${psetNameForTFM}~${propKeyForTFM}`
+          ])
+          
+          const res2 = await StreamBIM.API.makeApiRequest({
+            url: `/pgw/project-3464/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
+          });
+
+          let data = JSON.parse(res2).data;
+          logEvent('Got res: ' + data.length);
+          return data;
+        } catch (error) {
+          logError('error', error);
+        }
+      }
+
+      // Example usage of getObjectsWithTfmCodes
+      function getObjectsWithTfmCode() {
+        return getObjectsWithTfmCodes(['KK'])
+      }
+
+      // Example usage of colorCodeSpaces
+      async function colorCodeSpaces(){
+        await StreamBIM.API.resetObjectSearch();
+        const data = {
+          '01WdkzDc55oA5oPFwqUbmR': '7d7d7d',
+          '028y6nXsvDv8AOsMQjaEZR': '4abb32',
+          '029$nqXNzDP9018VbDWlS$': 'b90c0c'
+        }
+        const legends = {
+          'Not started': '7d7d7d',
+          'On track':    '4abb32',
+          'Over due':    'b90c0c'
+        }
+
+        await StreamBIM.API.colorCodeSpacesWithLegends({data, legends})
+        StreamBIM.API.zoomToSearchResult();
+      }
+
+      // Example usage of colorCodeObjects
+      async function colorCodeObjects(){
+        await StreamBIM.API.resetObjectSearch();
+        const data = {
+          '1uR2u13vnCeO9feOa0NW1P': '7d7d7d',
+          '3tpWS5jfPEmf7g9kFUlExZ': '4abb32',
+          '2acqJAQLPAoeSApeJTees2': 'b90c0c'
+        }
+        const legends = {
+          'Not started': '7d7d7d',
+          'On track':    '4abb32',
+          'Over due':    'b90c0c'
+        }
+
+        return StreamBIM.API.colorCodeObjectsWithLegends({data, legends}).then( () => {
+          StreamBIM.API.zoomToSearchResult();
+        });
+      }
+
+      async function highlightSystem(){
+        await StreamBIM.API.resetObjectSearch();
+        await StreamBIM.API.highlightSystem('08CWGl08rCWBFXLXyoG6Rs');
+        StreamBIM.API.zoomToSearchResult();
+      }
+
+
+      // Example of how to color code spaces based on which system is supplying it.
+      // The only input here is what TFM codes to look for - these determine which systems are considered.
+      // Note: spaces can only have one color/system - first hit wins. For ventilation, this is OK.
+      async function colorCodeSpacesByVentSystem(){
+        try {
+          await spaces?.length ? null : getSpaces()
+
+          // We fetch the basic info for the components
+          const components = await getObjectsWithTfmCodes(tfmCodesForVentilation);
+          
+          // We make a mapping from space names to space objects
+          spaceNameToSpaceMap = {}
+          spaces.forEach( (space) => {
+            spaceNameToSpaceMap[space['Name'] + ' ' + space['Long Name']] = space;
+          })
+          
+          // We make a map from space GUID to system by looping through the components,
+          // looking at which spaces they are in, get the GUID of the smallest space,
+          // and map this GUID to the system name of the component
+          components.forEach( (object) => {
+            spaceNames = object['Space Global Id'].split(', ');
+            const spacesForObject = spaceNames
+              .map(spaceName => spaceNameToSpaceMap[spaceName])
+              .filter(Boolean);
+
+            if (spacesForObject[0]?.GUID) {
+              systemForSpace[spacesForObject[0].GUID] = object['System Global Id'].split(', ')[0];
+            }
+          })
+
+          logEvent('Got res: ' + systemForSpace);
+          
+          // We create structs for the data and legendes which the
+          // colorCodeSpaces function needs
+          data = {}
+          legends = {}
+
+          Object.keys(systemForSpace).forEach( (spaceGuid, i) => {
+            const systemName = systemForSpace[spaceGuid]
+            const color = randomColor();
+            legends[systemName] = color;
+            data[spaceGuid] = color;
+          })
+
+          StreamBIM.API.colorCodeSpacesWithLegends({data, legends});
+
+        } catch (error) {
+          logError('error', error);
+        }
+      }
+
+      // Toggle the showAllFloors mode, where all floors are shown in a grid, ON or OFF
+      async function showAllFloors(){
+        showingAllFloors = !showingAllFloors;
+
+        await StreamBIM.API.setViewLayout(showingAllFloors ? 'ALL_FLOORS' : 'SMALL_2D');
+        StreamBIM.API.zoomToSearchResult()
+      }
+
+      // Example of going to a single space
+      async function gotoSpace(){
+        await StreamBIM.API.resetObjectSearch();
+        StreamBIM.API.gotoSpace('2ITwlBwcX7Fvrg_Ys8WaAt');
+      }
+
+      async function showNiceOverviewOfFloor() {
+        const floorList = await StreamBIM.API.getFloors();
+        const thirdFloorFromBelow = floorList.sort(function(a, b, ) {
+          return a.height - b.height;
+        })[3];
+        await StreamBIM.API.clipToFloor(thirdFloorFromBelow.id);
+        await StreamBIM.API.applyObjectSearch({
+          key: '@kind',
+          value: 'Space'
+        })
+        await StreamBIM.API.colorCodeByProperty({
+          pset: 'BaseQuantities', 
+          propertyKey: 'NetFloorArea'
+        })
+        StreamBIM.API.setSearchVisualizationMode('ORIGINAL');
+        await StreamBIM.API.zoomToSearchResult();
+      }
+
+
       document.getElementById('getSpaces').addEventListener("click", getSpaces, false);
       document.getElementById('getSystems').addEventListener("click", getSystems, false);
+      document.getElementById('getObjectsWithTfmCodes').addEventListener("click", getObjectsWithTfmCode, false);
+      document.getElementById('gotoSpace').addEventListener("click", gotoSpace, false);
+      document.getElementById('colorCodeSpaces').addEventListener("click", colorCodeSpaces, false);
+      document.getElementById('showNiceOverviewOfFloor').addEventListener("click", showNiceOverviewOfFloor, false);
+      document.getElementById('colorCodeObjects').addEventListener("click", colorCodeObjects, false);
+      document.getElementById('highlightSystem').addEventListener("click", highlightSystem, false);
+      document.getElementById('colorCodeSpacesByVentSystem').addEventListener("click", colorCodeSpacesByVentSystem, false);
+      document.getElementById('showAllFloors').addEventListener("click", showAllFloors, false);
     </script>
   </body>
 </html>

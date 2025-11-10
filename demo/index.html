@@ -128,7 +128,7 @@
       }
 
 
-      StreamBIM.connect({
+      StreamBIM.connectToParent(window, {
         pickedObject: function (result) {
           logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
           document.getElementById('guidInput').value = result.guid;
@@ -154,7 +154,7 @@
       }).then( function () {
         document.getElementById('connecting').style = 'display:none';
         document.getElementById('buttons').style = '';
-        StreamBIM.setShowExpandButton(true);
+        StreamBIM.API.setShowExpandButton(true);
         logEvent('Widget ready');
       }).catch( function(error) {
         logEvent('Connect failed: ' + JSON.stringify(error));
@@ -162,7 +162,7 @@
 
 
       var getProjectIdClicked = function () {
-        StreamBIM.getProjectId().then( (result) => {
+        StreamBIM.API.getProjectId().then( (result) => {
           logEvent('Got project ID: ' + result);
         }).catch( function(error) {
           logError('getProjectId', error);
@@ -170,7 +170,7 @@
       }
 
       var getUserEmailClicked = function () {
-        StreamBIM.getUserEmail().then( (result) => {
+        StreamBIM.API.getUserEmail().then( (result) => {
           logEvent('Got user email: ' + result);
         }).catch( function(error) {
           logError('getUserEmail failed: ', error);
@@ -178,7 +178,7 @@
       }
 
       var getCameraStateClicked = function () {
-        StreamBIM.getCameraState().then( (result) => {
+        StreamBIM.API.getCameraState().then( (result) => {
           logEvent('Got camera state: ' + JSON.stringify(result));
           window.lastCameraState = result;
         }).catch( function(error) {
@@ -187,7 +187,7 @@
       }
 
       var setLastCameraStateClicked = function () {
-        StreamBIM.setCameraState(window.lastCameraState).then( (result) => {
+        StreamBIM.API.setCameraState(window.lastCameraState).then( (result) => {
           logEvent('setCameraState: ' + result);
         }).catch( function(error) {
           logError('setCameraState', error);
@@ -195,7 +195,7 @@
       }
 
       var setLastCameraPositionClicked = function () {
-        StreamBIM.setCameraPosition(window.lastCameraState.position).then( (result) => {
+        StreamBIM.API.setCameraPosition(window.lastCameraState.position).then( (result) => {
           logEvent('setCameraPosition: ' + result);
         }).catch( function(error) {
           logError('setCameraPosition', error);
@@ -203,7 +203,7 @@
       }
 
       var getSpaceClicked = function () {
-        StreamBIM.getSpaces().then( (result) => {
+        StreamBIM.API.getSpaces().then( (result) => {
           if (result.length > 1) {
             logEvent('Got spaces: ' + result.join(', '));
           } else if (result.length == 1) {
@@ -220,7 +220,7 @@
       var getObjectInfoClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (result) => {
+          StreamBIM.API.getObjectInfo(guid).then( (result) => {
             logEvent('Got object info: ' + JSON.stringify(result));
           }).catch( function(error) {
             logError('getObjectInfo', error);
@@ -232,7 +232,7 @@
 
       var gotoSpaceClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.gotoSpace(guid).then( (result) => {
+        StreamBIM.API.gotoSpace(guid).then( (result) => {
           logEvent('gotoSpace: ' + result);
         }).catch( function(error) {
           logError('gotoSpace', error);
@@ -241,7 +241,7 @@
 
       var highlightObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.highlightObject(guid).then( (result) => {
+        StreamBIM.API.highlightObject(guid).then( (result) => {
           logEvent('highlightObject: ' + result);
         }).catch( function(error) {
           logError('highlightObject', error);
@@ -250,7 +250,7 @@
 
       var deHighlightObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.deHighlightObject(guid).then( (result) => {
+        StreamBIM.API.deHighlightObject(guid).then( (result) => {
           logEvent('deHighlightObject object: ' + result);
         }).catch( function(error) {
           logError('deHighlightObject', error);
@@ -258,7 +258,7 @@
       }
 
       var deHighlightAllObjectsClicked = function () {
-        StreamBIM.deHighlightAllObjects().then( (result) => {
+        StreamBIM.API.deHighlightAllObjects().then( (result) => {
           logEvent('deHighlightAllObjects: ' + result);
         }).catch( function(error) {
           logError('deHighlightAllObjects', error);
@@ -267,7 +267,7 @@
 
       var hideObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.hideObject(guid).then( (result) => {
+        StreamBIM.API.hideObject(guid).then( (result) => {
           logEvent('hideObject: ' + result);
         }).catch( function(error) {
           logError('hideObject', error);
@@ -276,7 +276,7 @@
 
       var showObjectClicked = function () {
         var guid = document.getElementById('guidInput').value;
-        StreamBIM.showObject(guid).then( (result) => {
+        StreamBIM.API.showObject(guid).then( (result) => {
           logEvent('showObject: ' + result);
         }).catch( function(error) {
           logError('showObject', error);
@@ -284,7 +284,7 @@
       }
 
       var showAllObjectsClicked = function () {
-        StreamBIM.showAllObjects().then( (result) => {
+        StreamBIM.API.showAllObjects().then( (result) => {
           logEvent('showAllObjects: ' + result);
         }).catch( function(error) {
           logError('showAllObjects', error);
@@ -292,7 +292,7 @@
       }
 
       var getViewportStateClicked = function () {
-        StreamBIM.getViewportState().then( (result) => {
+        StreamBIM.API.getViewportState().then( (result) => {
           var stringifiedState = JSON.stringify(result);
           logEvent('Got viewport state: ' + stringifiedState);
           document.getElementById('stateInput').value = stringifiedState;
@@ -303,7 +303,7 @@
 
       var setViewportStateClicked = function () {
         var state = JSON.parse(document.getElementById('stateInput').value);
-        StreamBIM.setViewportState(state).then( (result) => {
+        StreamBIM.API.setViewportState(state).then( (result) => {
           logEvent('setViewportState: ' + result);
         }).catch( function(error) {
           logError('setViewportState', error);
@@ -311,7 +311,7 @@
       }
 
       var takeScreenshotClicked = function () {
-        StreamBIM.takeScreenshot().then( (result) => {
+        StreamBIM.API.takeScreenshot().then( (result) => {
           logEvent('Got screenshot');
           document.getElementById('screenshotImg').src = result;
         }).catch( function(error) {
@@ -322,8 +322,8 @@
       var getAnnotatedFloorplanClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
-            StreamBIM.getAnnotatedFloorplan(selectedObject.center).then( (result) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
+            StreamBIM.API.getAnnotatedFloorplan(selectedObject.center).then( (result) => {
               logEvent('Got annotated floorplan');
               document.getElementById('screenshotImg').src = result;
             }).catch( function(error) {
@@ -336,7 +336,7 @@
       }
 
       var showExpandBtnClicked = function () {
-        StreamBIM.setShowExpandButton(true).then( (result) => {
+        StreamBIM.API.setShowExpandButton(true).then( (result) => {
           logEvent('Showing expand button');
         }).catch( function(error) {
           logError('setShowExpandButton', error);
@@ -344,7 +344,7 @@
       }
 
       var hideExpandBtnClicked = function () {
-        StreamBIM.setShowExpandButton(false).then( (result) => {
+        StreamBIM.API.setShowExpandButton(false).then( (result) => {
           logEvent('Hiding expand button');
         }).catch( function(error) {
           logError('setShowExpandButton', error);
@@ -352,7 +352,7 @@
       }
 
       var expandClicked = function () {
-        StreamBIM.setExpanded(true).then( (result) => {
+        StreamBIM.API.setExpanded(true).then( (result) => {
           logEvent('Clicked expand');
         }).catch( function(error) {
           logError('setExpanded', error);
@@ -360,7 +360,7 @@
       }
 
       var contractClicked = function () {
-        StreamBIM.setExpanded(false).then( (result) => {
+        StreamBIM.API.setExpanded(false).then( (result) => {
           logEvent('Clicked contract');
         }).catch( function(error) {
           logError('setExpanded', error);
@@ -370,7 +370,7 @@
       var findObjectsOfSameTypeClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var typeGuid = selectedObject.properties['Type Object Global Id']
             if (typeGuid) {
               var query = {
@@ -378,7 +378,7 @@
                 value: typeGuid,
                 limit: 100
               }
-              StreamBIM.findObjects(query).then( (result) => {
+              StreamBIM.API.findObjects(query).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -397,7 +397,7 @@
       var findObjectsInSameSystemClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var systemGuids = selectedObject.properties['System Global Id']
             if (systemGuids && systemGuids.length) {
               var query = {
@@ -405,7 +405,7 @@
                 value: systemGuids[0],
                 limit: 100
               }
-              StreamBIM.findObjects(query).then( (result) => {
+              StreamBIM.API.findObjects(query).then( (result) => {
                 logEvent('Objects in same system: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -424,7 +424,7 @@
       var showObjectsOfSameTypeClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var typeGuid = selectedObject.properties['Type Object Global Id'].split('~').pop()
             if (typeGuid) {
               var query = {
@@ -432,7 +432,7 @@
                 value: typeGuid,
                 limit: 100
               }
-              StreamBIM.applyObjectSearch(query).then( (result) => {
+              StreamBIM.API.applyObjectSearch(query).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -451,7 +451,7 @@
       var showObjectsInSameSystemClicked = function () {
         var guid = document.getElementById('guidInput').value;
         if (guid) {
-          StreamBIM.getObjectInfo(guid).then( (selectedObject) => {
+          StreamBIM.API.getObjectInfo(guid).then( (selectedObject) => {
             var systemGuids = selectedObject.properties['System Global Id']
             if (systemGuids && systemGuids.length) {
               var query = {
@@ -459,7 +459,7 @@
                 value: systemGuids[0],
                 limit: 100
               }
-              StreamBIM.applyObjectSearch(query).then( (result) => {
+              StreamBIM.API.applyObjectSearch(query).then( (result) => {
                 logEvent('Objects of same type: \n   - ' + result.join('\n   - '));
               }).catch( function(error) {
                 logError('findObjects', error);
@@ -490,7 +490,7 @@
             descending: false
           }
         }
-        StreamBIM.getObjectInfoForSearch(query).then(function(result) {
+        StreamBIM.API.getObjectInfoForSearch(query).then(function(result) {
           logEvent('Info for all doors: \n   - ' + JSON.stringify(result));
         }).catch( function(error) {
           logError('getObjectInfoForAllDoorsClicked', error);
@@ -499,7 +499,7 @@
 
 
       var resetObjectSearchClicked = function () {
-        StreamBIM.resetObjectSearch().then( () => {
+        StreamBIM.API.resetObjectSearch().then( () => {
           logEvent('Object search reset');
         }).catch( function(error) {
           logError('resetObjectSearch', error);
@@ -514,8 +514,8 @@
         var pset = 'BaseQuantities'
         var propertyKey = 'Height'
 
-        StreamBIM.applyObjectSearch(query).then( (result) => {
-          StreamBIM.colorCodeByProperty({pset, propertyKey}).then( (result) => {
+        StreamBIM.API.applyObjectSearch(query).then( (result) => {
+          StreamBIM.API.colorCodeByProperty({pset, propertyKey}).then( (result) => {
             logEvent('colorCodeByProperty: ' + result);
           }).catch( (err) => {
             logEvent('colorCodeByProperty failed');
@@ -528,7 +528,7 @@
       }
 
       var resetColorCodeByPropertyClicked = function () {
-        StreamBIM.colorCodeByProperty(null).then( (result) => {
+        StreamBIM.API.colorCodeByProperty(null).then( (result) => {
           logEvent('resetColorCodeByProperty: ' + result);
         }).catch( function(error) {
           logError('resetColorCodeByProperty', error);

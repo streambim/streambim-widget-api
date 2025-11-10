@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+  <head>
+    <title>StreamBIM demo 2</title>
+    <style>
+    html, body {
+      height: 100%;
+      margin: 0px;
+      padding: 0px;
+    }
+    body {
+      color: black; 
+    }
+    td, h1 {
+      padding: 12px;
+    }
+    td {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    input, textarea, #screenshotImg {
+      margin-bottom: 8px;
+      width: calc(100% - 8px);
+    }
+    textarea {
+      height: 60px;
+    }
+    .main {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    .content {
+      overflow: scroll!important; 
+      -webkit-overflow-scrolling: touch!important; 
+      flex-basis: 320px;
+      height: 100%;
+    }
+    #streambim_target {
+      flex-grow: 1;
+    }
+    #events {
+      height: 200px; 
+      overflow: scroll;
+      padding: 12px;
+      margin-bottom: 12px;
+      white-space: pre;
+    }
+    #events li {
+      padding: 8px;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <div class="content">
+        <h1>StreamBIM window demo</h1>
+        <button id="openWindow">Open window</button>
+        <div id="events"></div>
+        <div id="connecting">
+          Waiting for connection...
+        </div>
+        <div id="buttons" style="display:none;">
+          <table>
+            <tr><td>
+              <button id="getBuildingId">Get building ID</button>
+              <button id="getSpaces">Get spaces</button>
+              <button id="getSystems">Get systems</button>
+            </td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script src="../dist/streambim-widget-api.min.js"></script>
+    <script>
+
+      // ------ Helper functions -------------------
+      const b64EncodeUnicode = function(str) {
+        // first we use encodeURIComponent to get percent-encoded UTF-8,
+        // then we convert the percent encodings into raw bytes which
+        // can be fed into btoa. Ref. https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+          return String.fromCharCode('0x' + p1);
+        }));
+      }
+
+      const randomColor = () => {
+        return Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, "0");
+      }
+
+      const encodeFieldNames = (fieldNames) => {
+        return b64EncodeUnicode(fieldNames.join('|'));
+      }
+
+      var logEvent = function(text) {
+        var element = document.createElement('li');
+        element.textContent = text;
+        eventsContainer = document.getElementById('events');
+        eventsContainer.appendChild(element);
+        eventsContainer.scrollTop = eventsContainer.scrollHeight;
+      };
+
+      var logError = function(name, error) {
+        var text = name + ' failed: ' + error.code;
+        if (error.detail) {
+          text = text + JSON.stringify(error.detail);
+        }
+        logEvent(text);
+      }
+
+      // ------ State/cache  -------------------
+      let spaces = [];
+      const systemForSpace = {};
+      let showingAllFloors = false;
+
+      // ------ Project specific configs  -------------------
+      const propKeyForTFM = "BUS2_TFM";
+      const psetNameForTFM = "BUS 2 PARAMETERE";
+      const objectsLimit = 1000;
+      const tfmCodesForVentilation = ['SF', 'ST']; // tillufts og kontrollventiler
+      const patternsForHiddenLayers = ['REBAR', 'LARCH', 'HEAT_COOL', 'EL', 'RIV'];
+
+
+      // Let's go
+
+      function openWindow() {
+        const windowUrl = 'http://localhost:4201/#/viewer?buildingId=1000&projectId=1407&embedded=true'
+        const childWindow = window.open(windowUrl, 'StreamBIMWindow', 'width=1200,height=800');
+
+        StreamBIM.connectToWindow(childWindow, windowUrl, {
+          pickedObject: function (result) {
+            if (result.point) {
+              logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
+            } else {
+              logEvent('Clicked object "' + result.guid)
+            }
+            document.getElementById('guidInput').value = result.guid;
+            window.pickPoint = result.point;
+          },
+          spacesChanged: function (guids) {
+            if (guids.length) {
+              logEvent('Entered space ' + guids[0]);
+            } else {
+              logEvent('Left building');
+            }
+          },
+          floorChanged: function (floorId) {
+            logEvent('Entered floor ' + floorId);
+          },
+          cameraChanged: function (cameraState) {
+            window.cameraState = cameraState;
+            logEvent('Camera changed: ' + JSON.stringify(cameraState));
+          },
+          beforeInit: async function() {
+            // const token = ''
+            // StreamBIM.API.setAuthToken(token)
+            StreamBIM.API.setStyles(`
+              .message-container {
+                background-color: white;
+              }
+              #moreBtn, .map-more-buttons, #mapFloorplanSelector, #measure-toggle-container, .btn-custom-views-control {
+                display: none;
+              }
+              .color-coding-label-container {
+                color: black;
+              }
+            `)
+            StreamBIM.API.setSkyColor('white');
+            StreamBIM.API.setNavigationMode(1);
+            document.getElementById('connecting').style = 'display:none';
+            document.getElementById('buttons').style = '';
+          }
+        }).then( function () {
+          logEvent('Widget ready');
+        }).catch( function(error) {
+          logEvent('Connect failed: ' + JSON.stringify(error));
+        });
+      }
+
+      async function getBuildingId() {
+        try {
+          const buildingId = await StreamBIM.API.getBuildingId();
+          logEvent('Got building ID: ' + buildingId);
+          return buildingId;
+        } catch (error) {
+          logError('getBuildingId', error);
+        }
+      }
+
+      // Get JSON with basic info for all spaces in the model
+      // Main purpose of this is to get a mapping from Name to GUID,
+      // as GUID is needed to apply color coding etc.
+      // In this example we ask for the list of spaces each space is in,
+      // in addition to the floor of the space, but this is probably not needed.
+      async function getSpaces() {
+        try {
+          console.log('Getting spaces...', StreamBIM);
+          const res = await StreamBIM.API.makeApiRequest({
+            url: '/pgw/project-1407/api/v1/ifc-searches',
+            body: {
+              rules: [[{ buildingId: "1000", propKey: "@kind", propValue: "Space" }]]
+            },
+            method: 'POST'
+          });
+
+          const { searchId } = JSON.parse(res);
+          const fieldNamesEncoded = b64EncodeUnicode(
+            'GUID|Name|Long Name|Description|Space Global Id|Location~Floor by position'
+          );
+
+          const res2 = await StreamBIM.API.makeApiRequest({
+            url: `/pgw/project-1407/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
+          });
+
+          spaces = JSON.parse(res2).data;
+          logEvent('Got spaces: ' + spaces.length);
+          return spaces
+        } catch (error) {
+          logError('error', error);
+        }
+      }
+
+
+      // Get JSON with basic of the systems in the model
+      async function getSystems() {
+        try {
+          const res = await StreamBIM.API.makeApiRequest({
+            url: '/pgw/project-1407/api/v1/ifc-searches',
+            body: {
+              rules: [[{ buildingId: "1000", propKey: "@kind", propValue: "System" }]]
+            },
+            method: 'POST'
+          });
+
+          const { searchId } = JSON.parse(res);
+          const fieldNamesEncoded = b64EncodeUnicode('GUID|Name');
+
+          const res2 = await StreamBIM.API.makeApiRequest({
+            url: `/pgw/project-1407/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&jobFields=false&fieldLimit=0&fieldNames=${fieldNamesEncoded}&page[limit]=${objectsLimit}&page[skip]=0`
+          });
+          const systems = JSON.parse(res2).data;
+          logEvent('Got res: ' + systems.length);
+          return systems;
+        } catch (error) {
+          logError('error', error);
+        }
+      }
+
+      document.getElementById('openWindow').addEventListener("click", openWindow, false);
+      document.getElementById('getBuildingId').addEventListener("click", getBuildingId, false);
+      document.getElementById('getSpaces').addEventListener("click", getSpaces, false);
+      document.getElementById('getSystems').addEventListener("click", getSystems, false);
+    </script>
+  </body>
+</html>

@@ -3,6 +3,8 @@ A JavaScript library for interacting with StreamBIM from within an embedded widg
 
 Embed the StreamBIM viewer in your own page/app and control it via a promise‑based JavaScript API. This README consolidates the behavior shown in the demo apps so you can quickly wire up integrations.
 
+For migrating to v3, [read this section for instructions](#migration).
+
 ## Integration
 
 StreamBIM widgets have to be whitelisted and then enabled per StreamBIM project. Please contact support@rendra.io if you want to set up a custom widget for one or more projects. 
@@ -16,7 +18,7 @@ If your widget requires authentication you have two options:
 > **TL;DR**
 > 1) Load `streambim-widget-api.min.js`.
 > 2) `StreamBIM.connectToChild(iframe, callbacks)` to establish a connection.
-> 3) Call API methods on the returned `StreamBIM` proxy (they all return Promises).
+> 3) Call API methods on the `StreamBIM.API` proxy (they all return Promises).
 
 
 ## Contents
@@ -69,7 +71,7 @@ const methods = {
   }
 }
 
-StreamBIM.connect(methods).then(function() {
+StreamBIM.connectToParent(window, methods).then(function() {
   console.log('Connected!');
 });
 ```
@@ -129,6 +131,7 @@ Register these in the second argument to `connectToChild(iframe, callbacks)`:
 ### Project & User
 - **`getProjectId(): Promise<string>`** — Returns current project ID.
 - **`getUserEmail(): Promise<string>`** — Returns logged‑in user’s email/ID.
+- **`getBuildingId(): Promise<string>`** — Returns current building ID.
 
 ### Camera & Viewport
 - **`getCameraState(): Promise<CameraState>`** — Get the current camera/position/target/up vectors etc.
@@ -221,30 +224,30 @@ Register these in the second argument to `connectToChild(iframe, callbacks)`:
 ```js
 const data = { 'SpaceGuidA': '7d7d7d', 'SpaceGuidB': '4abb32', 'SpaceGuidC': 'b90c0c' };
 const legends = { 'Not started': '7d7d7d', 'On track': '4abb32', 'Over due': 'b90c0c' };
-await StreamBIM.colorCodeSpaces({ data, legends });
-await StreamBIM.zoomToSearchResult();
+await StreamBIM.API.colorCodeSpaces({ data, legends });
+await StreamBIM.API.zoomToSearchResult();
 ```
 
 ### Find & show objects in the same system
 ```js
-const selected = await StreamBIM.getObjectInfo(guid);
+const selected = await StreamBIM.API.getObjectInfo(guid);
 const systemGuid = selected.properties['System Global Id'][0];
-await StreamBIM.applyObjectSearch({ key: 'System Global Id', value: systemGuid, limit: 100 }, true);
-await StreamBIM.setSearchVisualizationMode('FADED');
-await StreamBIM.zoomToSearchResult();
+await StreamBIM.API.applyObjectSearch({ key: 'System Global Id', value: systemGuid, limit: 100 }, true);
+await StreamBIM.API.setSearchVisualizationMode('FADED');
+await StreamBIM.API.zoomToSearchResult();
 ```
 
 ### Quick screenshot & map tiles
 ```js
-const screenshot = await StreamBIM.takeScreenshot();
+const screenshot = await StreamBIM.API.takeScreenshot();
 document.querySelector('#img').src = screenshot;
-const map = await StreamBIM.getMapImage({ width: 1024, height: 768, resolution: 5 });
+const map = await StreamBIM.API.getMapImage({ width: 1024, height: 768, resolution: 5 });
 ```
 
 ### Using IFC Search + Export directly
 ```js
 // 1) create search
-const res = await StreamBIM.makeApiRequest({
+const res = await StreamBIM.API.makeApiRequest({
   url: '/pgw/project-XXXX/api/v1/ifc-searches',
   method: 'POST',
   body: { rules: [[{ buildingId: '1000', propKey: '@kind', propValue: 'Space' }]] }
@@ -253,7 +256,7 @@ const { searchId } = JSON.parse(res);
 
 // 2) export result
 const fieldNames = btoa('GUID|Name|Long Name|Description');
-const json = await StreamBIM.makeApiRequest({
+const json = await StreamBIM.API.makeApiRequest({
   url: `/pgw/project-XXXX/api/v1/ifc-searches/export/json?searchId=${searchId}&fieldUnion=true&fieldNames=${fieldNames}&page[limit]=1000&page[skip]=0`
 });
 const spaces = JSON.parse(json).data;
@@ -267,3 +270,76 @@ const spaces = JSON.parse(json).data;
 - Colors accept HEX strings only
 
 
+---
+
+## Migration
+Version 3 comes with a new feature and a few changes to the API.   
+
+### Connecting to StreamBIM in an external window
+You can now open StreamBIM in a new window and interact with it:   
+
+```javascript
+import StreamBIM from 'streambim-widget-api';
+
+const streamBimUrl = 'https://app.streambim.com/webapp/default/#/viewer?projectId=' + projectId + '&embedded=true';
+const streamBimWindow = window.open(streamBimUrl, 'streamBimWindow', 'width=1200,height=800');
+
+const methods = {
+  pickedObject: function (result) {
+    console.log('Clicked at ' + result.guid);
+  }
+}
+
+StreamBIM.connectToWindow(streamBimWindow, streamBimUrl, methods).then(function() {
+  console.log('Connected!');
+});
+```
+
+### Changes
+#### API calls
+API methods are no longer mapped directly to the StreamBIM global object. 
+Instead, there is a new property on the StreamBIM object named `API`, where all API calls can be made.  
+
+Old:
+```javascript
+const projectId = StreamBIM.getProjectId();
+```
+
+New:
+```javascript
+const projectId = StreamBIM.API.getProjectId();
+```
+
+#### Connecting from a widget
+We have also renamed the old `connect` method to `connectToParent`, and changed its parameters accordingly. 
+This method is used for running a widget from inside StreamBIM.   
+
+Old
+```javascript
+import StreamBIM from 'streambim-widget-api';
+
+const methods = {
+  pickedObject: function (result) {
+    console.log('Clicked at ' + result.guid);
+  }
+}
+
+StreamBIM.connect(methods).then(function() {
+  console.log('Connected!');
+});
+```
+
+New
+```javascript
+import StreamBIM from 'streambim-widget-api';
+
+const methods = {
+  pickedObject: function (result) {
+    console.log('Clicked at ' + result.guid);
+  }
+}
+
+StreamBIM.connectToParent(this.window, methods).then(function() {
+  console.log('Connected!');
+});
+```
