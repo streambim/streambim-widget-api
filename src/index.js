@@ -19,12 +19,8 @@ import { WindowMessenger, connect } from 'penpal';
       connectToParent(parentWindow, methods = {}) {
         const allowedOrigins = [];
 
-        try {
-          if (document.referrer) {
-            allowedOrigins.push(new URL(document.referrer).origin);
-          }
-        } catch (e) {
-          console.error(e);
+        if (document.referrer) {
+          allowedOrigins.push(new URL(document.referrer).origin);
         }
 
         const messenger = new WindowMessenger({
