@@ -128,7 +128,7 @@
       }
 
 
-      StreamBIM.connectToParent(window, {
+      StreamBIM.connectToParent(window.parent, {
         pickedObject: function (result) {
           logEvent('Clicked object "' + result.guid + '" at (' + result.point[0].toFixed(2) + ', ' + result.point[1].toFixed(2) + ', ' + result.point[2].toFixed(2) + ')');
           document.getElementById('guidInput').value = result.guid;

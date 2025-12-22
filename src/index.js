@@ -17,11 +17,15 @@ import { WindowMessenger, connect } from 'penpal';
 }(window, 'StreamBIM', function () {
     return {
       connectToParent(parentWindow, methods = {}) {
-        const parent = parentWindow || window.parent;
+        const allowedOrigins = [];
+
+        if (document.referrer) {
+          allowedOrigins.push(new URL(document.referrer).origin);
+        }
 
         const messenger = new WindowMessenger({
-          remoteWindow: parent,
-          allowedOrigins: [parent.origin, new URL(document.referrer).origin]
+          remoteWindow: parentWindow,
+          allowedOrigins: allowedOrigins
         });
 
         this._connection = connect({
